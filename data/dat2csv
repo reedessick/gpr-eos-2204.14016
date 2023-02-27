@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+
+"""a quick script to convert data into units with which I'm more familiar
+"""
+__author__ = "Reed Essick (reed.essick@gmail.com)"
+
+#-------------------------------------------------
+
+import numpy as np
+
+from argparse import ArgumentParser
+
+#-------------------------------------------------
+
+DAT_COLS = [
+    'baryon_number_density',  # n [fm^{-3}]
+    'baryon_density',         # rho [MeV fm^{-3}]
+    'minimum_pressure',       # P_min [MeV fm^{-3}]
+    'maximum_pressure',       # P_max [MeV fm^{-3}]
+    'minimum_energy_density', # eps_min [MeV fm^{-3}]
+    'maximum_energy_density', # eps_max [MeV fm^{-3}]
+]
+
+MeV_CGS = 1.79e-27
+fm_CGS = 1e-13
+
+#-------------------------------------------------
+
+parser = ArgumentParser()
+
+parser.add_argument('dat', nargs='+', type=str)
+
+parser.add_argument('-v', '--verbose', default=False, action='store_true')
+
+args = parser.parse_args()
+
+#-------------------------------------------------
+
+for dat in args.dat:
+    if args.verbose:
+        print('loading : '+dat)
+    nuc = dict(zip(DAT_COLS, np.transpose(np.genfromtxt(dat))))
+
+    # compute means
+    nuc['pressure'] = 0.5*(nuc['minimum_pressure'] + nuc['maximum_pressure'])    
+    nuc['energy_density'] = 0.5*(nuc['minimum_energy_density'] + nuc['maximum_energy_density'])    
+
+    # convert units
+    ast = dict()
+    ast['baryon_number_density'] = nuc['baryon_number_density'] * fm_CGS**-3
+    ast['baryon_density'] = nuc['baryon_density'] * MeV_CGS * fm_CGS**-3
+    for col in ['pressure', 'energy_density']:
+        for umn in nuc.keys():
+            if col in umn:
+                ast[umn+'c2'] = nuc[umn] * MeV_CGS * fm_CGS**-3
+
+    # save new file
+    csv = dat[:-3] + 'csv'
+    if args.verbose:
+        print('saving : '+csv)
+    np.savetxt(
+        csv,
+        np.transpose([ast[key] for key in ast.keys()]),
+        header=','.join(ast.keys()),
+        delimiter=',',
+        comments='',
+    )
