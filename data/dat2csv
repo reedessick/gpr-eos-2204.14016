@@ -8,6 +8,10 @@ __author__ = "Reed Essick (reed.essick@gmail.com)"
 
 import numpy as np
 
+import matplotlib
+matplotlib.use("Agg")
+from matplotlib import pyplot as plt
+
 from argparse import ArgumentParser
 
 #-------------------------------------------------
@@ -30,6 +34,7 @@ parser = ArgumentParser()
 
 parser.add_argument('dat', nargs='+', type=str)
 
+parser.add_argument('--plot', default=False, action='store_true')
 parser.add_argument('-v', '--verbose', default=False, action='store_true')
 
 args = parser.parse_args()
@@ -42,10 +47,16 @@ for dat in args.dat:
     nuc = dict(zip(DAT_COLS, np.transpose(np.genfromtxt(dat))))
 
     # compute means
+    if args.verbose:
+        print('    extracting means')
+
     nuc['pressure'] = 0.5*(nuc['minimum_pressure'] + nuc['maximum_pressure'])    
     nuc['energy_density'] = 0.5*(nuc['minimum_energy_density'] + nuc['maximum_energy_density'])    
 
     # convert units
+    if args.verbose:
+        print('    converting units')
+
     ast = dict()
     ast['baryon_number_density'] = nuc['baryon_number_density'] * fm_CGS**-3
     ast['baryon_density'] = nuc['baryon_density'] * MeV_CGS * fm_CGS**-3
@@ -54,10 +65,98 @@ for dat in args.dat:
             if col in umn:
                 ast[umn+'c2'] = nuc[umn] * MeV_CGS * fm_CGS**-3
 
+    # let's estimate sound-speed and auxiliary variable
+    if args.verbose:
+        print('computing sound speed, auxiliary variable')
+
+    for prefix in ['', 'minimum_', 'maximum_']:
+        ast[prefix+'cs2c2'] = np.gradient(ast[prefix+'pressurec2'], ast[prefix+'energy_densityc2'])
+        ast[prefix+'phi'] = np.log((1. - ast[prefix+'cs2c2'])/ast[prefix+'cs2c2'])
+
+    if args.plot:
+        if args.verbose:
+            print('plotting')
+
+        fig = plt.figure(figsize=(8,4))
+
+        ax11 = plt.subplot(2,3,1)
+        ax12 = plt.subplot(2,3,2)
+        ax13 = plt.subplot(2,3,3)
+        ax21 = plt.subplot(2,3,4)
+        ax22 = plt.subplot(2,3,5)
+        ax23 = plt.subplot(2,3,6)
+
+        alpha = 0.75
+
+        for prefix in ['', 'minimum_', 'maximum_']:        
+            ax11.plot(ast['baryon_density'], ast[prefix+'pressurec2'], alpha=alpha)
+            ax21.plot(ast['baryon_density'], ast[prefix+'energy_densityc2'], alpha=alpha)
+
+            ax12.plot(ast[prefix+'energy_densityc2'], ast[prefix+'pressurec2'], alpha=alpha)
+            ax22.plot(ast[prefix+'energy_densityc2'], ast[prefix+'cs2c2'], alpha=alpha)
+
+            ax13.plot(ast[prefix+'pressurec2'], ast[prefix+'cs2c2'], alpha=alpha)
+            ax23.plot(ast[prefix+'pressurec2'], ast[prefix+'phi'], marker='.', markersize=1, alpha=alpha, linestyle='none')
+
+        ax11.set_ylabel('$p\,[\mathrm{g}/\mathrm{cm}^3]$')
+        ax11.set_yscale('linear')
+        plt.setp(ax11.get_xticklabels(), visible=False)
+        ax11.set_xscale('linear')
+
+        ax21.set_ylabel('$\epsilon\,[\mathrm{g}/\mathrm{cm}^3]$')
+        ax21.set_yscale('linear')
+        ax21.set_xlabel('$\\rho\,[\mathrm{g}/\mathrm{cm}^3]$')
+        ax21.set_xscale('linear')
+
+        ax12.set_ylabel('$p\,[\mathrm{g}/\mathrm{cm}^3]$')
+        ax12.set_yscale('linear')
+        plt.setp(ax12.get_xticklabels(), visible=False)
+        ax12.set_xscale('linear')
+
+        ax22.set_ylabel('$c_s^2/c^2$')
+        ax22.set_yscale('linear')
+        ax22.set_xlabel('$\epsilon\,[\mathrm{g}/\mathrm{cm}^3]$')
+        ax22.set_xscale('linear')
+
+        ax13.set_ylabel('$c_s^2/c^2$')
+        ax13.set_yscale('linear')
+        plt.setp(ax13.get_xticklabels(), visible=False)
+        ax13.set_xscale('log')
+
+        ax23.set_ylabel('$\phi$')
+        ax23.set_yscale('linear')
+        ax23.set_xlabel('$p\,[\mathrm{g}/\mathrm{cm}^3]$')
+        ax23.set_xscale('log')
+
+        plt.subplots_adjust(
+            left=0.07,
+            right=0.98,
+            top=0.95,
+            bottom=0.15,
+            wspace=0.4,
+            hspace=0.03,
+        )
+
+        for ax in fig.axes:
+            ax.tick_params(
+                left=True,
+                right=True,
+                top=True,
+                bottom=True,
+                direction='in',
+                which='both',
+            )
+
+        figname = dat[:-3] + 'png'
+        if args.verbose:
+            print('    saving : '+figname)
+        fig.savefig(figname)
+        plt.close(fig)
+
     # save new file
     csv = dat[:-3] + 'csv'
     if args.verbose:
-        print('saving : '+csv)
+        print('    saving : '+csv)
     np.savetxt(
         csv,
         np.transpose([ast[key] for key in ast.keys()]),

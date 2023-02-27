@@ -1,6 +1,6 @@
 # gpr-eos-2204.14016
 
-a repository to store nonparametric extensions of 2204.14016 to higher densities.
+a repository to store nonparametric extensions of [2204.14016](https://arxiv.org/abs/2204.14016) to higher densities.
 
 ---
 
@@ -15,4 +15,9 @@ The upper and lower bounds on pressure and energy density are symmetric about th
   * `data/EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands.csv`
   * `data/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands.csv`
 
-via `data/dat2csv`.
+via
+
+```
+cd data
+./dat2csv *dat -v --plot
+```
