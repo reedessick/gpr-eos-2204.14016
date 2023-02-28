@@ -9,6 +9,8 @@ __author__ = "Reed Essick (reed.essick@gmail.com)"
 import numpy as np
 import h5py
 
+from scipy.integrate import cumtrapz
+
 import matplotlib
 matplotlib.use("Agg")
 from matplotlib import pyplot as plt
@@ -59,13 +61,15 @@ for hdf in args.hdf:
         cs2c2 = 1./dedp
 
         # compute energy_density from dedp and logpc2
-        raise NotImplementedError
+        e = cumtrapz(dedp, x=np.exp(mean_logpc2, initial=0.0)
+
+        raise NotImplementedError('need to set energy_density at a reference pressure')
 
         # compute baryon density from energy_density and pressure
-        raise NotImplementedError
+        raise NotImplementedError('integrate the 1st law to get baryon density')
 
         # cast into a structured array, add to list
-        raise NotImplementedError
+        raise NotImplementedError('include pressurec2, energy_densityc2, cs2c2, baryon_density, phi, else?')
 
     #---
 
