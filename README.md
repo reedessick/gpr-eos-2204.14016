@@ -18,6 +18,20 @@ The upper and lower bounds on pressure and energy density are symmetric about th
 via
 
 ```
-cd data
-./dat2csv *dat -v --plot
+./dat2csv *.dat
+```
+
+One can then construct simple Gaussian process models to emulate the each EFT calculation's uncertainty via
+
+```
+./csv2gp *.csv
+```
+
+This executable allows the user to choose a scale parameter and a correlation length parameter that are then built into the estimated covariance kernel.
+
+Finally, one can draw a sample set from each emulator for the auxiliary variable and combine this with an uncertainty on the pressure at a reference density in order to generate a sample set of pressure-baryon density-energy density curves.
+These can be checked against the original bounds to confirm the emulator behaves as desired.
+
+```
+**WRITE ME**
 ```
