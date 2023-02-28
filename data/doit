@@ -23,7 +23,7 @@ LENGTH_NAME="004d000"
 
 ./csv2gp \
     *.csv \
-    --pressurec2-range "1e9" "2e13" \
+    --pressurec2-range "1e9" "3e13" \
     --num-pressure-points "501" \
     --scale $SCALE \
     --correlation-length $LENGTH \
@@ -66,6 +66,8 @@ do
         --reference-pressurec2 "1.0e13" \
         --reference-pressurec2 "1.5e13" \
         --reference-pressurec2 "2.0e13" \
+        --reference-pressurec2 "2.5e13" \
+        --reference-pressurec2 "3.0e13" \
         --num-draws 1000 \
         --plot \
         --verbose
