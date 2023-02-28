@@ -155,20 +155,9 @@ for csv in args.csv:
     with h5py.File(hdf, 'w') as obj:
         group = obj.create_group(os.path.basename(csv[:-4]))
 
-        # record the parameters that are expected within universality
-        group.attrs.create('weight', 1.0)
-        group.attrs.create('poly_degree', np.nan)
-        group.attrs.create('length_scale', np.nan)
-        group.attrs.create('sigma', np.nan)
-        group.attrs.create('sigma_obs', np.nan)
-        group.attrs.create('model_multiplier', np.nan)
-
         # these are actually meaningful
         group.attrs.create('correlation_length', args.correlation_length)
         group.attrs.create('scale', args.scale)
-
-        group.attrs.create('xlabel', 'log(pressurec2)')
-        group.attrs.create('flabel', 'phi')
 
         # create dataset for mean function
         group.create_dataset(

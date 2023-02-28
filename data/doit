@@ -17,7 +17,7 @@
     --pressurec2-range 1e8 1e13 \
     --num-pressure-points 501 \
     --scale 0.75 \
-    --correlation-length 4 \
+    --correlation-length 4.0 \
     --plot \
     --num-draws 5 \
     --verbose

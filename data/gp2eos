@@ -1,0 +1,127 @@
+#!/usr/bin/env python3
+
+"""a script to draw realizations from the GP and integrate them to obtain the EoS
+"""
+__author__ = "Reed Essick (reed.essick@gmail.com)"
+
+#-------------------------------------------------
+
+import numpy as np
+import h5py
+
+import matplotlib
+matplotlib.use("Agg")
+from matplotlib import pyplot as plt
+
+from argparse import ArgumentParser
+
+#-------------------------------------------------
+
+parser = ArgumentParser()
+
+parser.add_argument('hdf', nargs='+', type=str)
+
+parser.add_argument('--num-draws', default=100, type=int)
+
+parser.add_argument('--plot', default=False, action='store_true')
+
+parser.add_argument('-v', '--verbose', default=False, action='store_true')
+
+args = parser.parse_args()
+
+#-------------------------------------------------
+
+for hdf in args.hdf:
+    if args.verbose:
+        print('loading : '+hdf)
+
+    with h5py.File(hdf, 'r') as obj:
+        group = obj.keys()[0]
+
+        correlation_length = group.attrs['correlation_length']
+        scale = group.attrs['scale']
+
+        mean = group['mean'][:]
+        cov = group['cov'][...]
+
+    mean_logpc2 = mean['log(pressurec2)']
+    mean_phi = mean['phi']
+
+    #---
+
+    if args.verbose:
+        print('drawing %d realizations'%args.num_draws)
+
+    draws = []
+    for phi in np.random.multivariate_normal(mean_phi, cov, size=args.num_draws):
+        # compute cs2c2 from phi
+        dedp = 1 + np.exp(phi)
+        cs2c2 = 1./dedp
+
+        # compute energy_density from dedp and logpc2
+        raise NotImplementedError
+
+        # compute baryon density from energy_density and pressure
+        raise NotImplementedError
+
+        # cast into a structured array, add to list
+        raise NotImplementedError
+
+    #---
+
+    if args.plot:
+        if args.verbose:
+            print('    plotting')
+
+        fig = plt.figure()
+
+        ax1 = plt.subplot(1,3,1)
+        ax2 = plt.subplot(1,3,2)
+        ax3 = plt.subplot(1,3,3)
+
+        kwargs = dict(color='r', alpha=0.25)
+        for draw in draws:
+            ax1.plot(draw['pressurec2'], draw['phi'], **kwargs)
+            ax2.plot(draw['pressurec2'], draw['cs2c2'], **kwargs)
+            ax3.plot(draw['energy_densityc2'], draw['pressurec2'], **kwargs)
+
+        ax1.set_ylabel('$\phi$')
+        ax1.set_yscale('linear')
+        ax1.set_xlabel('$p/c^2\,[\mathrm{g}/\mathrm{cm}^3]$')
+        ax1.set_xscale('log')
+
+        ax2.set_ylabel('$c_s^2/c^2$')
+        ax2.set_yscale('linear')
+        ax2.set_xlabel('$p/c^2\,[\mathrm{g}/\mathrm{cm}^3]$')
+        ax2.set_xscale('log')
+
+        ax3.set_ylabel('$p/c^2\,[\mathrm{g}/\mathrm{cm}^3]$')
+        ax3.set_yscale('linear')
+        ax3.set_xlabel('$\epsilon/c^2\,[\mathrm{g}/\mathrm{cm}^3]$')
+        ax3.set_xscale('linear')
+
+        for ax in fig.axes:
+            ax.tick_params(
+                left=True,
+                right=True,
+                top=True,
+                bottom=True,
+                direction='in',
+                which='both',
+            )
+
+        figname = hdf[:-4] + '-samples.png'
+        if args.verbose:
+            print('    saving : '+figname)
+        fig.savefig(figname)
+        plt.close(fig)
+
+    #---
+
+    # write draws to disk
+    tmp = hdf[:-4] + '_%06d.csv'
+    for draw in draws:
+        csv = tmp % draw
+        if args.verbose:
+            print('saving : '+csv)
+        np.savetxt(csv, draw, header=','.join(draw.dtype.names), delimiter=',', comments='')
