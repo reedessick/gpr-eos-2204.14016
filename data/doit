@@ -12,14 +12,43 @@
 
 # build simple GP models based on the uncertainty envelopes
 
+SCALE=0.75
+SCALE_NAME="00d75"
+
+LENGTH=4.0
+LENGTH_NAME="004d000"
+
 ./csv2gp \
     *.csv \
-    --pressurec2-range 1e8 1e13 \
+    --pressurec2-range 1e9 1e13 \
     --num-pressure-points 501 \
-    --scale 0.75 \
-    --correlation-length 4.0 \
+    --scale $SCALE \
+    --correlation-length $LENGTH \
     --plot \
     --num-draws 5 \
     --verbose
 
 # draw from GP model and integrate to get pressure - energy_density - baryon_density curves
+
+for ORDER in "N2LO" "N3LO"
+do
+    ./gp2eos \
+        EMN450_${ORDER}_MBPT3_beta_equilibrium_eft_bands_${SCALE_NAME}_${LENGTH_NAME}.hdf \
+        --overlay-csv EMN450_${ORDER}_MBPT3_beta_equilibrium_eft_bands.csv \
+        --reference-pressurec2 1e9 \
+        --reference-pressurec2 1e10 \
+        --reference-pressurec2 1e11 \
+        --reference-pressurec2 1e12 \
+        --reference-pressurec2 2e12 \
+        --reference-pressurec2 3e12 \
+        --reference-pressurec2 4e12 \
+        --reference-pressurec2 5e12 \
+        --reference-pressurec2 6e12 \
+        --reference-pressurec2 7e12 \
+        --reference-pressurec2 8e12 \
+        --reference-pressurec2 9e12 \
+        --reference-pressurec2 1e13 \
+        --num-draws 1000 \
+        --plot \
+        --verbose
+done

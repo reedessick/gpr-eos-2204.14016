@@ -6,6 +6,9 @@ __author__ = "Reed Essick (reed.essick@gmail.com)"
 
 #-------------------------------------------------
 
+import os
+import sys
+
 import numpy as np
 import h5py
 
@@ -19,113 +22,306 @@ from argparse import ArgumentParser
 
 #-------------------------------------------------
 
-parser = ArgumentParser()
-
-parser.add_argument('hdf', nargs='+', type=str)
-
-parser.add_argument('--num-draws', default=100, type=int)
-
-parser.add_argument('--plot', default=False, action='store_true')
-
-parser.add_argument('-v', '--verbose', default=False, action='store_true')
-
-args = parser.parse_args()
+# taken to be the averages of the lowest-pressure points in the input *.dat files
+REFERENCE_PRESSUREC2 = 0.5*(930747044.0368062 + 1304735286.4299934)       # g/cm**3
+REFERENCE_ENERGY_DENSITYC2 = 0.5*(1683188313870.2659 + 1683203771363.282) # g/cm**3
+REFERENCE_BARYON_DENSITY = 1681821350000.0002                             # g/cm**3
 
 #-------------------------------------------------
 
-for hdf in args.hdf:
+parser = ArgumentParser()
+
+parser.add_argument('hdf', type=str)
+
+parser.add_argument('--num-draws', default=100, type=int)
+parser.add_argument('--seed', default=None, type=int)
+
+parser.add_argument('--plot', default=False, action='store_true')
+parser.add_argument('--overlay-csv', default=None, type=str)
+
+parser.add_argument('--reference-pressurec2', default=[], type=float, action='append',
+    help='plot the marginal distributions at these reference pressures')
+
+parser.add_argument('-v', '--verbose', default=False, action='store_true')
+parser.add_argument('-V', '--Verbose', default=False, action='store_true')
+
+args = parser.parse_args()
+
+args.verbose |= args.Verbose
+
+#-------------------------------------------------
+
+if args.seed is not None:
     if args.verbose:
-        print('loading : '+hdf)
+        print('setting seed=%d'%args.seed)
+    np.random.seed(args.seed)
 
-    with h5py.File(hdf, 'r') as obj:
-        group = obj.keys()[0]
+#-------------------------------------------------
 
-        correlation_length = group.attrs['correlation_length']
-        scale = group.attrs['scale']
+# make sure output directory exists
+dirname = os.path.basename(args.hdf)[:-4]
+os.makedirs(dirname, exist_ok=True)
 
-        mean = group['mean'][:]
-        cov = group['cov'][...]
+# load data
+if args.verbose:
+    print('loading : '+args.hdf)
 
-    mean_logpc2 = mean['log(pressurec2)']
-    mean_phi = mean['phi']
+with h5py.File(args.hdf, 'r') as obj:
+    group = obj[list(obj.keys())[0]]
 
-    #---
+    correlation_length = group.attrs['correlation_length']
+    scale = group.attrs['scale']
 
+    mean = group['mean'][:]
+    cov = group['cov'][...]
+
+mean_logpc2 = mean['log(pressurec2)']
+mean_pc2 = np.exp(mean_logpc2)
+
+mean_phi = mean['phi']
+
+#---
+
+if args.overlay_csv is not None:
     if args.verbose:
-        print('drawing %d realizations'%args.num_draws)
+        print('    loading overlay from : '+args.overlay_csv)
+    overlay = np.genfromtxt(args.overlay_csv, names=True, delimiter=',')
 
-    draws = []
-    for phi in np.random.multivariate_normal(mean_phi, cov, size=args.num_draws):
-        # compute cs2c2 from phi
-        dedp = 1 + np.exp(phi)
-        cs2c2 = 1./dedp
+#---
 
-        # compute energy_density from dedp and logpc2
-        e = cumtrapz(dedp, x=np.exp(mean_logpc2, initial=0.0)
+if args.verbose:
+    print('drawing %d realizations'%args.num_draws)
 
-        raise NotImplementedError('need to set energy_density at a reference pressure')
+draws = []
+for phi in np.random.multivariate_normal(mean_phi, cov, size=args.num_draws):
 
-        # compute baryon density from energy_density and pressure
-        raise NotImplementedError('integrate the 1st law to get baryon density')
+    # array to hold results
+    data = np.empty(len(mean_pc2), dtype=[(_, float) for _ in ['baryon_density', 'energy_densityc2', 'pressurec2', 'cs2c2', 'phi']])
 
-        # cast into a structured array, add to list
-        raise NotImplementedError('include pressurec2, energy_densityc2, cs2c2, baryon_density, phi, else?')
+    data['pressurec2'] = mean_pc2
+    data['phi'] = phi
 
-    #---
+    # compute cs2c2 from phi
+    dec2dpc2 = 1 + np.exp(phi)
 
-    if args.plot:
-        if args.verbose:
-            print('    plotting')
+    data['cs2c2'] = 1./dec2dpc2
+        
+    # compute energy_density from dedp and logpc2
+    ec2 = cumtrapz(dec2dpc2, x=mean_pc2, initial=0.0)
+    ec2 += REFERENCE_ENERGY_DENSITYC2 - np.interp(REFERENCE_PRESSUREC2, mean_pc2, ec2) # set the initial condition of the integration
 
-        fig = plt.figure()
+    data['energy_densityc2'] = ec2
 
-        ax1 = plt.subplot(1,3,1)
-        ax2 = plt.subplot(1,3,2)
-        ax3 = plt.subplot(1,3,3)
+    # compute baryon density from energy_density and pressure
+    baryon_density = np.exp(cumtrapz(1./(ec2 + mean_pc2), x=ec2, initial=0.0)) # integrate the 1st law
+    baryon_density *= REFERENCE_BARYON_DENSITY / np.interp(REFERENCE_PRESSUREC2, mean_pc2, baryon_density) # set the initial condition of the integration
 
-        kwargs = dict(color='r', alpha=0.25)
-        for draw in draws:
-            ax1.plot(draw['pressurec2'], draw['phi'], **kwargs)
-            ax2.plot(draw['pressurec2'], draw['cs2c2'], **kwargs)
-            ax3.plot(draw['energy_densityc2'], draw['pressurec2'], **kwargs)
+    data['baryon_density'] = baryon_density
+        
+    # cast into a structured array, add to list
+    draws.append(data)
 
-        ax1.set_ylabel('$\phi$')
-        ax1.set_yscale('linear')
-        ax1.set_xlabel('$p/c^2\,[\mathrm{g}/\mathrm{cm}^3]$')
-        ax1.set_xscale('log')
+#---
 
-        ax2.set_ylabel('$c_s^2/c^2$')
-        ax2.set_yscale('linear')
-        ax2.set_xlabel('$p/c^2\,[\mathrm{g}/\mathrm{cm}^3]$')
-        ax2.set_xscale('log')
+if args.plot:
+    if args.verbose:
+        print('    plotting')
 
-        ax3.set_ylabel('$p/c^2\,[\mathrm{g}/\mathrm{cm}^3]$')
-        ax3.set_yscale('linear')
-        ax3.set_xlabel('$\epsilon/c^2\,[\mathrm{g}/\mathrm{cm}^3]$')
-        ax3.set_xscale('linear')
+    fig = plt.figure(figsize=(8,3))
 
-        for ax in fig.axes:
-            ax.tick_params(
-                left=True,
-                right=True,
-                top=True,
-                bottom=True,
-                direction='in',
-                which='both',
-            )
+    ax1 = plt.subplot(1,3,1)
+    ax2 = plt.subplot(1,3,2)
+    ax3 = plt.subplot(1,3,3)
 
-        figname = hdf[:-4] + '-samples.png'
-        if args.verbose:
-            print('    saving : '+figname)
-        fig.savefig(figname)
-        plt.close(fig)
-
-    #---
-
-    # write draws to disk
-    tmp = hdf[:-4] + '_%06d.csv'
+    # plot draws
+    kwargs = dict(color='r', alpha=0.05)
     for draw in draws:
-        csv = tmp % draw
-        if args.verbose:
-            print('saving : '+csv)
-        np.savetxt(csv, draw, header=','.join(draw.dtype.names), delimiter=',', comments='')
+        ax1.plot(draw['pressurec2'], draw['phi'], **kwargs)
+        ax2.plot(draw['pressurec2'], draw['cs2c2'], **kwargs)
+        ax3.plot(draw['energy_densityc2'], draw['pressurec2'], **kwargs)
+
+    # plot overlay csv
+    if args.overlay_csv is not None:
+        kwargs = dict(color='b', alpha=1.0)
+
+        ax1.plot(overlay['pressurec2'], overlay['phi'], **kwargs)
+        ax2.plot(overlay['pressurec2'], overlay['cs2c2'], **kwargs)
+        ax3.plot(overlay['energy_densityc2'], overlay['pressurec2'], **kwargs)
+
+        kwargs = dict(color='c', alpha=1.0)
+
+        ax1.plot(overlay['minimum_pressurec2'], overlay['minimum_phi'], **kwargs)
+        ax1.plot(overlay['maximum_pressurec2'], overlay['maximum_phi'], **kwargs)
+
+        ax2.plot(overlay['minimum_pressurec2'], overlay['minimum_cs2c2'], **kwargs)
+        ax2.plot(overlay['maximum_pressurec2'], overlay['maximum_cs2c2'], **kwargs)
+
+        ax3.plot(overlay['minimum_energy_densityc2'], overlay['minimum_pressurec2'], **kwargs)
+        ax3.plot(overlay['maximum_energy_densityc2'], overlay['maximum_pressurec2'], **kwargs)
+
+    ax1.set_ylabel('$\phi$')
+    ax1.set_yscale('linear')
+    ax1.set_xlabel('$p/c^2\,[\mathrm{g}/\mathrm{cm}^3]$')
+    ax1.set_xscale('log')
+
+    ax2.set_ylabel('$c_s^2/c^2$')
+    ax2.set_yscale('linear')
+    ax2.set_xlabel('$p/c^2\,[\mathrm{g}/\mathrm{cm}^3]$')
+    ax2.set_xscale('log')
+
+    ax3.set_ylabel('$p/c^2\,[\mathrm{g}/\mathrm{cm}^3]$')
+    ax3.set_yscale('linear')
+    ax3.set_xlabel('$\epsilon/c^2\,[\mathrm{g}/\mathrm{cm}^3]$')
+    ax3.set_xscale('linear')
+
+    # add reference pressures annotations
+    kwargs = dict(color='k', linestyle='dashed', zorder=-1000)
+    for ref_pc2 in args.reference_pressurec2:
+        ylim = ax1.get_ylim()
+        ax1.plot([ref_pc2]*2, ylim, **kwargs)
+        ax1.set_ylim(ylim)
+
+        ylim = ax2.get_ylim()
+        ax2.plot([ref_pc2]*2, ylim, **kwargs)
+        ax2.set_ylim(ylim)
+
+        xlim = ax3.get_xlim()
+        ax3.plot(xlim, [ref_pc2]*2, **kwargs)
+        ax3.set_xlim(xlim)
+
+    for ax in fig.axes:
+        ax.tick_params(
+            left=True,
+            right=True,
+            top=True,
+            bottom=True,
+            direction='in',
+            which='both',
+        )
+
+    plt.subplots_adjust(
+        left=0.05,
+        right=0.98,
+        bottom=0.18,
+        top=0.90,
+        hspace=0.05,
+        wspace=0.40,
+    )
+
+    figname = os.path.join(dirname, os.path.basename(args.hdf)[:-4] + '-samples.png')
+    if args.verbose:
+        print('    saving : '+figname)
+    fig.savefig(figname)
+    plt.close(fig)
+
+#---
+
+# plot marginal distributions
+for ref_pc2 in args.reference_pressurec2:
+    if args.verbose:
+        print('    plotting marginal distributions at pressurec2=%.6e'%ref_pc2)
+
+    fig = plt.figure(figsize=(8,3))
+
+    ax1 = plt.subplot(1,3,1)
+    ax2 = plt.subplot(1,3,2)
+    ax3 = plt.subplot(1,3,3)
+
+    # make histograms
+
+    phi = []
+    cs2c2 = []
+    ec2 = []
+    for draw in draws:
+        phi.append(np.interp(ref_pc2, draw['pressurec2'], draw['phi']))
+        cs2c2.append(np.interp(ref_pc2, draw['pressurec2'], draw['cs2c2']))
+        ec2.append(np.interp(ref_pc2, draw['pressurec2'], draw['energy_densityc2']))
+
+    kwargs = dict(color='r', histtype='step', bins=max(10, int(0.5*len(draws)**0.5)))
+
+    ax1.hist(phi, **kwargs)
+    ax2.hist(cs2c2, **kwargs)
+    ax3.hist(ec2, **kwargs)
+
+    # add overlay annotations
+
+    kwargs = dict(color='b', alpha=1.0)
+
+    ylim = ax1.get_ylim()
+    ax1.plot([np.interp(ref_pc2, overlay['pressurec2'], overlay['phi'])]*2, ylim, **kwargs)
+    ax1.set_ylim(ylim)
+
+    ylim = ax2.get_ylim()
+    ax2.plot([np.interp(ref_pc2, overlay['pressurec2'], overlay['cs2c2'])]*2, ylim, **kwargs)
+    ax2.set_ylim(ylim)
+
+    ylim = ax3.get_ylim()
+    ax3.plot([np.interp(ref_pc2, overlay['pressurec2'], overlay['energy_densityc2'])]*2, ylim, **kwargs)
+    ax3.set_ylim(ylim)
+
+    kwargs = dict(color='c', alpha=1.0)
+    for prefix in ['minimum_', 'maximum_']:
+        ylim = ax1.get_ylim()
+        x = np.interp(ref_pc2, overlay[prefix+'pressurec2'], overlay[prefix+'phi'])
+        ax1.plot([x]*2, ylim, **kwargs)
+        ax1.set_ylim(ylim)
+
+        ylim = ax2.get_ylim()
+        x = np.interp(ref_pc2, overlay[prefix+'pressurec2'], overlay[prefix+'cs2c2'])
+        ax2.plot([x]*2, ylim, **kwargs)
+        ax2.set_ylim(ylim)
+
+        ylim = ax3.get_ylim()
+        x = np.interp(ref_pc2, overlay[prefix+'pressurec2'], overlay[prefix+'energy_densityc2'])
+        ax3.plot([x]*2, ylim, **kwargs)
+        ax3.set_ylim(ylim)
+
+    # finish decorating
+    plt.setp(ax1.get_yticklabels(), visible=False)
+    ax1.set_xlabel('$\phi$')
+
+    plt.setp(ax2.get_yticklabels(), visible=False)
+    ax2.set_xlabel('$c_s^2/c^2$')
+
+    plt.setp(ax3.get_yticklabels(), visible=False)
+    ax3.set_xlabel('$\epsilon/c^2\,[\mathrm{g}/\mathrm{cm}^3]$')
+
+    ax2.set_title('$p/c^2 = %.6e\,[\mathrm{g}/\mathrm{cm}^3]$'%ref_pc2)
+
+    for ax in fig.axes:
+        ax.tick_params(
+            left=True,
+            right=True,
+            top=True,
+            bottom=True,
+            direction='in',
+            which='both',
+        )
+
+    plt.subplots_adjust(
+        left=0.05,
+        right=0.98,
+        bottom=0.18,
+        top=0.90,
+        hspace=0.05,
+        wspace=0.10,
+    )
+
+    tag = ('%.4e'%ref_pc2).replace('.', 'd')
+    figname = os.path.join(dirname, os.path.basename(args.hdf)[:-4] + '-pc2_%s.png'%tag)
+    if args.verbose:
+        print('    saving : '+figname)
+    fig.savefig(figname)
+    plt.close(fig)
+
+#---
+
+# write draws to disk
+if args.verbose:
+    print('    saving %d draws'%args.num_draws)
+tmp = os.path.join(dirname, os.path.basename(args.hdf)[:-4] + '_%06d.csv')
+for ind, draw in enumerate(draws):
+    csv = tmp % ind
+    if args.Verbose:
+        print('    saving : '+csv)
+    np.savetxt(csv, draw, header=','.join(draw.dtype.names), delimiter=',', comments='')

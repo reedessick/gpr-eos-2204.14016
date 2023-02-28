@@ -50,8 +50,8 @@ if args.seed is not None:
 #-------------------------------------------------
 
 if args.verbose:
-    print('constructing grid of reference %d pressures within %s g/cm^3' % \
-        (args.num_pressure_points, args.pressurec2_range))
+    print('constructing grid of reference %d pressures within (%.6e, %.6e) g/cm^3' % \
+        (args.num_pressure_points, args.pressurec2_range[0], args.pressurec2_range[1]))
 logpc2_test = np.linspace(*np.log(args.pressurec2_range), args.num_pressure_points)
 ones = np.ones_like(logpc2_test)
 
@@ -160,13 +160,10 @@ for csv in args.csv:
         group.attrs.create('scale', args.scale)
 
         # create dataset for mean function
-        group.create_dataset(
-            'mean',
-            data=np.array(
-                np.transpose([logpc2_test, phi_test]),
-                dtype=[('log(pressurec2)', float), ('phi', float)],
-            ),
-        )
+        data = np.empty(len(logpc2_test), dtype=[('log(pressurec2)', float), ('phi', float)])
+        data['log(pressurec2)'] = logpc2_test
+        data['phi'] = phi_test
+        group.create_dataset('mean', data=data)
 
         # create dataset for covariance
         group.create_dataset('cov', data=cov)
