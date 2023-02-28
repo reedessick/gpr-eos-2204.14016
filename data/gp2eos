@@ -22,22 +22,15 @@ from argparse import ArgumentParser
 
 #-------------------------------------------------
 
-# taken to be the averages of the lowest-pressure points in the input *.dat files
-REFERENCE_PRESSUREC2 = 0.5*(930747044.0368062 + 1304735286.4299934)       # g/cm**3
-REFERENCE_ENERGY_DENSITYC2 = 0.5*(1683188313870.2659 + 1683203771363.282) # g/cm**3
-REFERENCE_BARYON_DENSITY = 1681821350000.0002                             # g/cm**3
-
-#-------------------------------------------------
-
 parser = ArgumentParser()
 
 parser.add_argument('hdf', type=str)
+parser.add_argument('overlay_csv', type=str)
 
 parser.add_argument('--num-draws', default=100, type=int)
 parser.add_argument('--seed', default=None, type=int)
 
 parser.add_argument('--plot', default=False, action='store_true')
-parser.add_argument('--overlay-csv', default=None, type=str)
 
 parser.add_argument('--reference-pressurec2', default=[], type=float, action='append',
     help='plot the marginal distributions at these reference pressures')
@@ -82,10 +75,19 @@ mean_phi = mean['phi']
 
 #---
 
-if args.overlay_csv is not None:
-    if args.verbose:
-        print('    loading overlay from : '+args.overlay_csv)
-    overlay = np.genfromtxt(args.overlay_csv, names=True, delimiter=',')
+if args.verbose:
+    print('loading overlay from : '+args.overlay_csv)
+overlay = np.genfromtxt(args.overlay_csv, names=True, delimiter=',')
+
+# extract reference pressure, energy_density, baryon_density
+
+ref_pc2_mean = overlay['pressurec2'][0]
+ref_pc2_sigma = (overlay['maximum_pressurec2'][0] - overlay['minimum_pressurec2'][0]) / 2
+
+ref_ec2_mean = overlay['energy_densityc2'][0]
+ref_ec2_sigma = (overlay['maximum_energy_densityc2'][0] - overlay['minimum_energy_densityc2'][0]) / 2
+
+ref_baryon_density = overlay['baryon_density'][0]
 
 #---
 
@@ -101,6 +103,10 @@ for phi in np.random.multivariate_normal(mean_phi, cov, size=args.num_draws):
     data['pressurec2'] = mean_pc2
     data['phi'] = phi
 
+    # draw reference pressure, energy_density to set integration constants
+    ref_pc2 = np.random.normal(ref_pc2_mean, ref_pc2_sigma)
+    ref_ec2 = np.random.normal(ref_ec2_mean, ref_ec2_sigma)
+
     # compute cs2c2 from phi
     dec2dpc2 = 1 + np.exp(phi)
 
@@ -108,13 +114,13 @@ for phi in np.random.multivariate_normal(mean_phi, cov, size=args.num_draws):
         
     # compute energy_density from dedp and logpc2
     ec2 = cumtrapz(dec2dpc2, x=mean_pc2, initial=0.0)
-    ec2 += REFERENCE_ENERGY_DENSITYC2 - np.interp(REFERENCE_PRESSUREC2, mean_pc2, ec2) # set the initial condition of the integration
+    ec2 += ref_ec2 - np.interp(ref_pc2, mean_pc2, ec2) # set the initial condition
 
     data['energy_densityc2'] = ec2
 
     # compute baryon density from energy_density and pressure
     baryon_density = np.exp(cumtrapz(1./(ec2 + mean_pc2), x=ec2, initial=0.0)) # integrate the 1st law
-    baryon_density *= REFERENCE_BARYON_DENSITY / np.interp(REFERENCE_PRESSUREC2, mean_pc2, baryon_density) # set the initial condition of the integration
+    baryon_density *= ref_baryon_density / np.interp(ref_pc2, mean_pc2, baryon_density) # set the initial condition
 
     data['baryon_density'] = baryon_density
         
@@ -141,24 +147,24 @@ if args.plot:
         ax3.plot(draw['energy_densityc2'], draw['pressurec2'], **kwargs)
 
     # plot overlay csv
-    if args.overlay_csv is not None:
-        kwargs = dict(color='b', alpha=1.0)
+    kwargs = dict(color='b', alpha=1.0, marker='.', markersize=1, linestyle='none')
 
-        ax1.plot(overlay['pressurec2'], overlay['phi'], **kwargs)
-        ax2.plot(overlay['pressurec2'], overlay['cs2c2'], **kwargs)
-        ax3.plot(overlay['energy_densityc2'], overlay['pressurec2'], **kwargs)
+    ax1.plot(overlay['pressurec2'], overlay['phi'], **kwargs)
+    ax2.plot(overlay['pressurec2'], overlay['cs2c2'], **kwargs)
+    ax3.plot(overlay['energy_densityc2'], overlay['pressurec2'], **kwargs)
 
-        kwargs = dict(color='c', alpha=1.0)
+    kwargs['color'] = 'c'
 
-        ax1.plot(overlay['minimum_pressurec2'], overlay['minimum_phi'], **kwargs)
-        ax1.plot(overlay['maximum_pressurec2'], overlay['maximum_phi'], **kwargs)
+    ax1.plot(overlay['minimum_pressurec2'], overlay['minimum_phi'], **kwargs)
+    ax1.plot(overlay['maximum_pressurec2'], overlay['maximum_phi'], **kwargs)
 
-        ax2.plot(overlay['minimum_pressurec2'], overlay['minimum_cs2c2'], **kwargs)
-        ax2.plot(overlay['maximum_pressurec2'], overlay['maximum_cs2c2'], **kwargs)
+    ax2.plot(overlay['minimum_pressurec2'], overlay['minimum_cs2c2'], **kwargs)
+    ax2.plot(overlay['maximum_pressurec2'], overlay['maximum_cs2c2'], **kwargs)
 
-        ax3.plot(overlay['minimum_energy_densityc2'], overlay['minimum_pressurec2'], **kwargs)
-        ax3.plot(overlay['maximum_energy_densityc2'], overlay['maximum_pressurec2'], **kwargs)
+    ax3.plot(overlay['minimum_energy_densityc2'], overlay['minimum_pressurec2'], **kwargs)
+    ax3.plot(overlay['maximum_energy_densityc2'], overlay['maximum_pressurec2'], **kwargs)
 
+    # decorate
     ax1.set_ylabel('$\phi$')
     ax1.set_yscale('linear')
     ax1.set_xlabel('$p/c^2\,[\mathrm{g}/\mathrm{cm}^3]$')
@@ -175,7 +181,7 @@ if args.plot:
     ax3.set_xscale('linear')
 
     # add reference pressures annotations
-    kwargs = dict(color='k', linestyle='dashed', zorder=-1000)
+    kwargs = dict(color='k', linestyle='dashed', alpha=0.50, zorder=-1000)
     for ref_pc2 in args.reference_pressurec2:
         ylim = ax1.get_ylim()
         ax1.plot([ref_pc2]*2, ylim, **kwargs)

@@ -12,16 +12,19 @@
 
 # build simple GP models based on the uncertainty envelopes
 
-SCALE=0.75
-SCALE_NAME="00d75"
+#SCALE=0.75
+#SCALE_NAME="00d75"
+
+SCALE=0.50
+SCALE_NAME="00d50"
 
 LENGTH=4.0
 LENGTH_NAME="004d000"
 
 ./csv2gp \
     *.csv \
-    --pressurec2-range 1e9 1e13 \
-    --num-pressure-points 501 \
+    --pressurec2-range "1e9" "2e13" \
+    --num-pressure-points "501" \
     --scale $SCALE \
     --correlation-length $LENGTH \
     --plot \
@@ -32,23 +35,39 @@ LENGTH_NAME="004d000"
 
 for ORDER in "N2LO" "N3LO"
 do
+
     ./gp2eos \
-        EMN450_${ORDER}_MBPT3_beta_equilibrium_eft_bands_${SCALE_NAME}_${LENGTH_NAME}.hdf \
-        --overlay-csv EMN450_${ORDER}_MBPT3_beta_equilibrium_eft_bands.csv \
-        --reference-pressurec2 1e9 \
-        --reference-pressurec2 1e10 \
-        --reference-pressurec2 1e11 \
-        --reference-pressurec2 1e12 \
-        --reference-pressurec2 2e12 \
-        --reference-pressurec2 3e12 \
-        --reference-pressurec2 4e12 \
-        --reference-pressurec2 5e12 \
-        --reference-pressurec2 6e12 \
-        --reference-pressurec2 7e12 \
-        --reference-pressurec2 8e12 \
-        --reference-pressurec2 9e12 \
-        --reference-pressurec2 1e13 \
+        "EMN450_${ORDER}_MBPT3_beta_equilibrium_eft_bands_${SCALE_NAME}_${LENGTH_NAME}.hdf" \
+        "EMN450_${ORDER}_MBPT3_beta_equilibrium_eft_bands.csv" \
+        --reference-pressurec2 "1.0e9" \
+        --reference-pressurec2 "3.0e9" \
+        --reference-pressurec2 "6.0e9" \
+        --reference-pressurec2 "1.0e10" \
+        --reference-pressurec2 "3.0e10" \
+        --reference-pressurec2 "6.0e10" \
+        --reference-pressurec2 "1.0e11" \
+        --reference-pressurec2 "2.0e11" \
+        --reference-pressurec2 "3.0e11" \
+        --reference-pressurec2 "4.0e11" \
+        --reference-pressurec2 "5.0e11" \
+        --reference-pressurec2 "6.0e11" \
+        --reference-pressurec2 "7.0e11" \
+        --reference-pressurec2 "8.0e11" \
+        --reference-pressurec2 "9.0e11" \
+        --reference-pressurec2 "1.0e12" \
+        --reference-pressurec2 "2.0e12" \
+        --reference-pressurec2 "3.0e12" \
+        --reference-pressurec2 "4.0e12" \
+        --reference-pressurec2 "5.0e12" \
+        --reference-pressurec2 "6.0e12" \
+        --reference-pressurec2 "7.0e12" \
+        --reference-pressurec2 "8.0e12" \
+        --reference-pressurec2 "9.0e12" \
+        --reference-pressurec2 "1.0e13" \
+        --reference-pressurec2 "1.5e13" \
+        --reference-pressurec2 "2.0e13" \
         --num-draws 1000 \
         --plot \
         --verbose
+
 done
