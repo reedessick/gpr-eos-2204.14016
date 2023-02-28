@@ -1,0 +1,25 @@
+#!/bin/bash
+
+### a quick script to record workflow
+### Reed Essick (reed.essick@gmail.com)
+
+# convert to csv and CGS units
+
+./dat2csv \
+    *.dat \
+    --plot \
+    --verbose
+
+# build simple GP models based on the uncertainty envelopes
+
+./csv2gp \
+    *.csv \
+    --pressurec2-range 1e8 1e13 \
+    --num-pressure-points 501 \
+    --scale 0.75 \
+    --correlation-length 4 \
+    --plot \
+    --num-draws 5 \
+    --verbose
+
+# draw from GP model and integrate to get pressure - energy_density - baryon_density curves

@@ -6,9 +6,15 @@ __author__ = "Reed Essick (reed.essick@gmail.com)"
 
 #-------------------------------------------------
 
-import numpy as np
+import os
+import sys
 
+import numpy as np
 import h5py
+
+import matplotlib
+matplotlib.use("Agg")
+from matplotlib import pyplot as plt
 
 from argparse import ArgumentParser
 
@@ -18,17 +24,160 @@ parser = ArgumentParser()
 
 parser.add_argument('csv', nargs='+', type=str)
 
-parser.add_argument('-v', '--verbose', default=False)
+parser.add_argument('--pressurec2-range', nargs=2, type=float, default=(1e9, 1e13))
+parser.add_argument('--num-pressure-points', type=int, default=51)
+
+parser.add_argument('-S', '--scale', type=float, default=1.0)
+parser.add_argument('-L', '--correlation-length', type=float, default=1.0)
+
+parser.add_argument('--plot', default=False, action='store_true')
+parser.add_argument('--num-draws', default=0, type=int)
+parser.add_argument('--seed', default=None, type=int)
+
+parser.add_argument('-v', '--verbose', default=False, action='store_true')
 
 args = parser.parse_args()
 
+tag = ('%05.2f_%07.3f'%(args.scale, args.correlation_length)).replace('.', 'd')
+
 #-------------------------------------------------
 
-raise NotImplementedError('''\
-load data
-construct GP model that follows uncertainty estimates (how should I do this...)
-expose control over correlation length scale through a command-line argument?
+if args.seed is not None:
+    if args.verbose:
+        print('setting seed=%d'%args.seed)
+    np.random.seed(args.seed)
 
-write the resulting GP into an HDF file compatible with universality
-then I can draw from it and plot the resulting draws...
-''')
+#-------------------------------------------------
+
+if args.verbose:
+    print('constructing grid of reference %d pressures within %s g/cm^3' % \
+        (args.num_pressure_points, args.pressurec2_range))
+logpc2_test = np.linspace(*np.log(args.pressurec2_range), args.num_pressure_points)
+ones = np.ones_like(logpc2_test)
+
+#------------------------
+
+for csv in args.csv:
+
+    # load data
+
+    if args.verbose:
+        print('loading : '+csv)
+
+    data = np.genfromtxt(csv, names=True, delimiter=',')
+
+    logpc2 = np.log(data['pressurec2'])
+    phi = data['phi']
+
+    logpc2_min = np.log(data['minimum_pressurec2'])
+    phi_min = data['minimum_phi']
+
+    logpc2_max = np.log(data['maximum_pressurec2'])
+    phi_max = data['maximum_phi']
+
+    #---
+
+    # construct model
+
+    if args.verbose:
+        print('    constructing Gaussian process model')
+
+    phi_test = np.interp(logpc2_test, logpc2, phi) # just do linear interpolation
+
+    phi_min_test = np.interp(logpc2_test, logpc2_min, phi_min)
+    phi_max_test = np.interp(logpc2_test, logpc2_max, phi_max)
+
+    # approximate marginal uncertainty based on spread of max and min
+    stdv = (0.5*((phi_test - phi_min_test)**2 + (phi_test - phi_max_test)**2))**0.5
+    stdv *= args.scale # inflate or deflate wiggles
+
+    # construct funny-looking covariance matrix that builds in squared-exponential correlations in log(p/c2)
+
+    ### basic outer product
+    cov = np.outer(stdv, stdv)
+
+    ### temper correlations with squared exponential roll-off
+    cov *= np.exp(-(np.outer(logpc2_test, ones)-np.outer(ones, logpc2_test))**2 / args.correlation_length**2) 
+
+    #---
+
+    if args.plot: # draw a few examples and plot them
+        if args.verbose:
+            print('    plotting %d realizations' % args.num_draws)
+
+        fig = plt.figure()
+        ax = fig.gca()
+
+        # actual data
+        kwargs = dict(color='c', alpha=0.75, marker='.', markersize=1, linestyle='none')
+        ax.plot(logpc2_min, phi_min, **kwargs)
+        ax.plot(logpc2_max, phi_max, **kwargs)
+
+        kwargs = dict(color='b', alpha=0.75, marker='.', markersize=1, linestyle='none')
+        ax.plot(logpc2, phi, **kwargs)
+
+        # mean function, interpolated
+        ax.plot(logpc2_test, phi_test, color='k')
+
+        # marginal covariances
+        sigma = np.diag(cov)**0.5
+        ax.fill_between(logpc2_test, phi_test-sigma, phi_test+sigma, color='k', alpha=0.25)
+
+        # plot realizations on top
+        for draw in np.random.multivariate_normal(phi_test, cov, size=args.num_draws):
+            ax.plot(logpc2_test, draw, color='r', alpha=0.75, zorder=-10)
+        
+        ax.set_xlabel('log(pressurec2)')
+        ax.set_ylabel('phi')
+
+        ax.tick_params(
+            left=True,
+            right=True,
+            top=True,
+            bottom=True,
+            direction='in',
+            which='both',
+        )
+
+        png = csv[:-4]+'_%s.png'%tag
+        if args.verbose:
+            print('    saving : '+png)
+        fig.savefig(png)
+        plt.close(fig)
+
+    #---
+
+    # write to disk
+    hdf = csv[:-4] + '_%s.hdf'%tag
+    if args.verbose:
+        print('    saving : '+hdf)
+
+    with h5py.File(hdf, 'w') as obj:
+        group = obj.create_group(os.path.basename(csv[:-4]))
+
+        # record the parameters that are expected within universality
+        group.attrs.create('weight', 1.0)
+        group.attrs.create('poly_degree', np.nan)
+        group.attrs.create('length_scale', np.nan)
+        group.attrs.create('sigma', np.nan)
+        group.attrs.create('sigma_obs', np.nan)
+        group.attrs.create('model_multiplier', np.nan)
+
+        # these are actually meaningful
+        group.attrs.create('correlation_length', args.correlation_length)
+        group.attrs.create('scale', args.scale)
+
+        group.attrs.create('xlabel', 'log(pressurec2)')
+        group.attrs.create('flabel', 'phi')
+
+        # create dataset for mean function
+        group.create_dataset(
+            'mean',
+            data=np.array(
+                np.transpose([logpc2_test, phi_test]),
+                dtype=[('log(pressurec2)', float), ('phi', float)],
+            ),
+        )
+
+        # create dataset for covariance
+        group.create_dataset('cov', data=cov)
