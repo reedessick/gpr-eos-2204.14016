@@ -13,10 +13,9 @@ import numpy as np
 
 from argparse import ArgumentParser
 
-#-------------------------------------------------
+### non-standard library
 
-def kernel(x1, x2, **kwargs):
-    raise NotImplementedError
+import kernels
 
 #-------------------------------------------------
 
@@ -41,17 +40,8 @@ egroup.add_argument('--max-output-pressurec2', default=1e17, type=float)
 egroup.add_argument('--num-pressurec2-points-per-length', default=10, type=int,
     help='the number of grid points to be placed per correlation length in the extension to higher pressures')
 
-### FIXME!
-# update this so that we can specify muliple covariance kernels for the extension
-# these should be summed when constructing prior_cov
-# maybe just read these in from a config file?
-
-egroup.add_argument('--prior-standard-deviation', default=1.0, type=float,
-    help='1D marginal standard deviation for auxiliary variable as part of extension to higher pressures')
-egroup.add_argument('--prior-correlation-length', default=0.5, type=float,
-    help='correlation length for auxiliary variable as part of extension to higher pressures')
-
-### FIXME! add parameters for Matern kernel, also kernel type (squared exponential, matern, etc)
+egroup.add_argument('config', type=str,
+    help='config for the properties of the GP extension')
 
 #---
 
@@ -130,27 +120,28 @@ else:
 # set up covariance matrix
 # note that we use the exact pressures from the input process
 
-prior_cov_kwargs = dict(
-    'pressurec2_scale'=args.pressurec2_scale,
-    'correlation_length'=args.prior_correlation_length,
-    'standard_deviation'=args.prior_standard_deviation,
-### FIXME! add other parameters here
-)
+kernel = kernels.parse(args.config, verbose=args.verbose)
 
-if args.verbose:
-    print('computing prior covariance with')
-    for key, val in prior_cov_kwargs.items():
-        print('    '+key, val)
+if args.pressurec2_scale == 'linear':
+    input_x = input_pc2
+    extra_x = extra_pc2
+
+elif args.pressurec2_scale == 'log':
+    input_x = np.log(input_pc2)
+    extra_x = np.log(extra_pc2)
+
+else:
+    raise ValueError('--pressurec2-scale=%s not understood!' % args.pressurec2_scale)
 
 ### input - input
-prior_cov_input_input = kernel(input_pc2, input_pc2, **prior_cov_kwargs)
+prior_cov_input_input = kernel.cov(input_x, input_x)
 
 ### input - extension and extension - input
-prior_cov_input_extra = kernel(input_pc2, extra_pc2, **prior_cov_kwargs)
+prior_cov_input_extra = kernel.cov(input_x, extra_x)
 prior_cov_extra_input = np.transpose(prior_cov_input_extra)
 
 ### extension - extension
-prior_cov_extra_extra = kernel(extra_pc2, extra_pc2, **prior_cov_kwargs)
+prior_cov_extra_extra = kernel.cov(extra_x, extra_x, **prior_cov_kwargs)
 
 #-------------------------------------------------
 
