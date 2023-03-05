@@ -41,6 +41,11 @@ egroup.add_argument('--max-output-pressurec2', default=1e17, type=float)
 egroup.add_argument('--num-pressurec2-points-per-length', default=10, type=int,
     help='the number of grid points to be placed per correlation length in the extension to higher pressures')
 
+### FIXME!
+# update this so that we can specify muliple covariance kernels for the extension
+# these should be summed when constructing prior_cov
+# maybe just read these in from a config file?
+
 egroup.add_argument('--prior-standard-deviation', default=1.0, type=float,
     help='1D marginal standard deviation for auxiliary variable as part of extension to higher pressures')
 egroup.add_argument('--prior-correlation-length', default=0.5, type=float,
