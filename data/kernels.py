@@ -116,6 +116,35 @@ def parse(path, verbose=False):
 
     kernels = []
     for section in config.get_sections():
-        raise NotImplementedError
+        name = config.get(section, 'kernel')
+
+        if name == 'WhiteNoise':
+            kernel = WhiteNoise(
+                sigma=config.getfloat(section, 'sigma'),
+            )
+
+        elif name == 'SquaredExponential':
+            kernel = SquaredExponential(
+                sigma=config.getfloat(section, 'sigma'),
+                length=config.getfloat(section, 'length'),
+            )
+
+        elif name == 'Matern':
+            kernel = Matern(
+                sigma=config.getfloat(section, 'sigma'),
+                length=config.getfloat(section, 'length'),
+                order=config.getint(section, 'order'),
+            )
+
+        elif name == 'Polynomial':
+            kernel = Polynomial(
+                sigma=config.getfloat(section, 'sigma'),
+                order=config.getint(section, 'order'),
+            )
+
+        else:
+            raise ValueError('could not understand kernel=%s in section=%s'%(name, section))
+
+        kernels.append(kernel)
 
     return SummedKernel(kernels=kernels)

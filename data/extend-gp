@@ -120,6 +120,9 @@ else:
 # set up covariance matrix
 # note that we use the exact pressures from the input process
 
+if args.verbose:
+    print('computing prior covariance matrix')
+
 kernel = kernels.parse(args.config, verbose=args.verbose)
 
 if args.pressurec2_scale == 'linear':
@@ -132,6 +135,8 @@ elif args.pressurec2_scale == 'log':
 
 else:
     raise ValueError('--pressurec2-scale=%s not understood!' % args.pressurec2_scale)
+
+raise NotImplementedError('fix this! need to set up my "test" points across the entire range...')
 
 ### input - input
 prior_cov_input_input = kernel.cov(input_x, input_x)
@@ -146,19 +151,37 @@ prior_cov_extra_extra = kernel.cov(extra_x, extra_x, **prior_cov_kwargs)
 #-------------------------------------------------
 
 # figure out prior mean function
-raise NotImplementedError('''\
-implement mean of prior function
-can we make this a zero-mean process (or just a simple linear trend) but then make the kernel the sum of a long-wavelength function and a short wavelength function?
-this will avoid the ambiguity of picking a single mean function and sticking with it...
-could help the prior avoid shoving everything to cs2 --> 1 at high densities?
-''')
+# take this to be an extrapolation of the input process's behavior
+
+if args.verbose:
+    print('computing prior mean as a cubic fit to input process')
+
+p3, p2, p1, p0 = np.polyfit(input_x, input_phi, 3) # use a 3rd order polynomial
+                                         # will force phi to decrease as part of the extrapolation
+
+input_mean = p3*input_x**3 + p2*input_x**2 + p1*input_x + p0
+extra_mean = p3*extra_x**3 + p2*extra_x**2 + p1*extra_x + p0
 
 #-------------------------------------------------
 
 # condition total GP on the input GP
+
+if args.verbose:
+    print('conditioning prior process on input process')
+
 raise NotImplementedError('condition the GP on both the input and the prior')
 
 #------------------------
 
 # save
-raise NotImplementedError
+if args.verbose:
+    print('writing : '+args.output_hdf)
+
+with h5py.File(args.output_hdf, 'w') as obj:
+    group = obj.create_group(os.path.basename(args.input_hdf)[:-4])
+
+    # store meta-data
+    raise NotImplementedError
+
+    # store process
+    raise NotImplementedError
