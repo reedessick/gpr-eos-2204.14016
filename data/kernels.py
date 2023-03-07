@@ -13,14 +13,14 @@ class Kernel(object):
     """an object that represents a covariance kernel
     """
 
-    def __init__(self, *args, **kwargs):
-        raise NotImplementedError
+    def __init__(self):
+        pass # child classes should overwrite this
 
     def cov(self, x, y):
-        raise NotImplementedError
+        return np.zeros((len(x), len(y)), dtype=float)
 
     def __add__(self, other):
-        raise NotImplementedError
+        return SummedKernel([self, other])
 
 #-------------------------------------------------
 
@@ -29,7 +29,13 @@ class SummedKernel(Kernel):
     """
 
     def __init__(self, kernels):
-        raise NotImplementedError
+        self._kernels = [_ for _ in kernels]
+
+    def cov(self, x, y):
+        ans = 0
+        for kernel in self._kernels:
+            ans += kernel.cov(x, y)
+        return ans
 
 #-------------------------------------------------
 
@@ -38,12 +44,26 @@ class WhiteNoise(Kernel):
     cov(x, y) = sigma**2 * delta(x-y)
     """
 
+    def __init__(self, sigma=1.0):
+        self._sigma = 1.0
+
+    def cov(self, x, y):
+        ans = np.zeros((len(x), len(y)), dtype=float)
+        raise NotImplementedError('figure out when x==y and set cov to sigma**2')
+
 #------------------------
 
 class SquaredExponential(Kernel):
     """squared exponential kernel
     cov(x, y) = sigma**2 * np.exp(-0.5*(x-y)**2/length**2)
     """
+
+    def __init__(self, sigma=1.0, length=1.0):
+        self._sigma = sigma
+        self._length = length
+
+    def cov(self, x, y):
+        raise NotImplementedError
 
 #------------------------
 
