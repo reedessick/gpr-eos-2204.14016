@@ -169,10 +169,10 @@ total_mean = p3*total_x**3 + p2*total_x**2 + p1*total_x + p0
 if args.verbose:
     print('conditioning prior process on input process')
 
-raise NotImplementedError('condition the GP on both the input and the prior')
+invcov_input_input = np.linalg.inv(input_cov) + np.linalg.inv(prior_cov_input_input) ### FIXME! check this...
 
-conditioned_mean = None
-conditioned_cov = None
+conditioned_mean = total_mean + prior_cov_total_input @ invcov_input_input @ (input_phi - input_mean)
+conditioned_cov = prior_cov_total_total - prior_cov_total_input @ invcov_input_input @ prior_cov_input_total
 
 #------------------------
 
