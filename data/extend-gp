@@ -182,7 +182,16 @@ total_mean = p3*total_x**3 + p2*total_x**2 + p1*total_x + p0
 if args.verbose:
     print('conditioning prior process on input process')
 
-invcov_input_input = np.linalg.inv(input_cov + prior_cov_input_input) ### FIXME! check this...
+# this treats the input process as a noisey observation
+# it should work if we do not infer the function exactly at the input points
+# BUT I want to infer the function exactly at the input points to make sure I follow the input process closely...
+invcov_input_input = np.linalg.inv(input_cov + prior_cov_input_input)
+
+### FIXME:
+# make sure the expression above works when I infer the function at the input points
+# or derive a new expression that does
+# perhaps we can "jitter" the evaluation points to be slightly away from the input points, but very close (small compared to correlation lengths)
+# maybe that will tie the function at the test points tightly-enough to the input points?
 
 conditioned_mean = total_mean + prior_cov_total_input @ invcov_input_input @ (input_phi - input_mean)
 conditioned_cov = prior_cov_total_total - prior_cov_total_input @ invcov_input_input @ prior_cov_input_total
@@ -196,12 +205,14 @@ if args.plot:
         print('plotting conditioned process')
 
     fig = plt.figure()
+    ax = fig.gca()
 
+    # now actually plot
     raise NotImplementedError('''
 make a plot of the conditioned process
     mean and 1D stdv (envelop plot)
     overlay with a few realizations?
-    plot distributions at a few reference pressures?
+    also plot a heat-map of correlation matrix
 ''')
 
     # save
