@@ -56,7 +56,7 @@ class WhiteNoise(Kernel):
 
     def cov(self, x, y):
         diff = self._absissa2diff(x, y)
-        return np.where(diff==0, sigma**2, 0.0)
+        return np.where(diff==0, self._sigma**2, 0.0)
 
 #------------------------
 
@@ -115,7 +115,7 @@ def parse(path, verbose=False):
     config.read(path)
 
     kernels = []
-    for section in config.get_sections():
+    for section in config.sections():
         name = config.get(section, 'kernel')
 
         if name == 'WhiteNoise':

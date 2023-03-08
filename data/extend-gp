@@ -11,6 +11,10 @@ import os
 import h5py
 import numpy as np
 
+import matplotlib
+matplotlib.use("Agg")
+from matplotlib import pyplot as plt
+
 from argparse import ArgumentParser
 
 ### non-standard library
@@ -47,6 +51,7 @@ egroup.add_argument('config', type=str,
 
 vgroup = parser.add_argument_group('output arguments')
 
+vgroup.add_argument('--plot', default=False, action='store_true')
 vgroup.add_argument('--output-hdf', type=str, default=None)
 vgroup.add_argument('-v', '--verbose', default=False, action='store_true')
 
@@ -67,7 +72,7 @@ with h5py.File(args.input_hdf, 'r') as obj:
 
     attrs = dict(group.attrs.items())
 
-    input_pc2 = np.mean(group['mean']['log(pressurec2)'][:])
+    input_pc2 = np.exp(group['mean']['log(pressurec2)'][:])
     input_phi = group['mean']['phi'][:] # for the moment, stick with the assumption that the maximum sound speed is 1
 
     input_cov = group['cov'][...]
@@ -76,16 +81,20 @@ with h5py.File(args.input_hdf, 'r') as obj:
 
 # truncated initial process at user-defined maximum pressure
 if args.max_input_pressurec2 is not None:
-    max_input_pc2 = np.max(mean_pc2)
+    max_input_pc2 = np.max(input_pc2)
 
     if max_input_pc2 > args.max_input_pressurec2:
         if args.verbose:
             print('truncating input pressurec2 to be <= %.6e g/cm^3'%args.max_input_pressurec2)
-        keep = input_pc2 <= args.max_input_pressurec2
+        keep = np.arange(len(input_pc2))[input_pc2 <= args.max_input_pressurec2]
+        if not len(keep):
+            raise RuntimeError('cannot discard all input samples!')
+        keep = keep[-1]
 
-        input_pc2 = input_pc2[keep]
-        input_phi = input_phi[keep]
-        input_cov = input_cov[keep,keep]
+        input_pc2 = input_pc2[:keep]
+        input_phi = input_phi[:keep]
+
+        input_cov = input_cov[:keep,:keep]
 
     elif args.verbose:
         print('maximum input pressurece (%.6e g/cm^3) already less than requested maximum (%.6e g/cm^3)' % \
@@ -94,23 +103,22 @@ if args.max_input_pressurec2 is not None:
 #-------------------------------------------------
 
 # now set up additional pressure grid
-low_pressurec2 = np.max(mean_pc2)
+low_pressurec2 = np.max(input_pc2)
 
 if args.pressurec2_scale == 'linear':
-    num = args.num_pressurec2_points
     if args.verbose:
         print('placing extension to higher pressures linearly with %d points between (%.6e, %.6e) g/cm^3' % \
-            (num, low_pressurec2, args.max_output_pressurec2))
+            (args.num_pressurec2_points, low_pressurec2, args.max_output_pressurec2))
+
     ### do not repeat first point, so only grab the results starting at the 2nd point
     extra_pc2 = np.linspace(low_pressurec2, args.max_output_pressurec2, args.num_pressurec2_points+1)[1:]
 
 elif args.pressurec2_scale == 'log':
-    num = np.log(args.max_output_pressurec2 / low_pressurec2) / args.prior_correlation_length
-    num *= args.num_pressurec2_points_per_length
     if args.verbose:
         print('placing extension to higher pressures logarithmically with %d points between (%.6e, %.6e) g/cm^3' % \
-            (num, low_pressurec2, args.max_output_pressurec2))
+            (args.num_pressurec2_points, low_pressurec2, args.max_output_pressurec2))
 
+    ### do not repeat first point, so only grab the results starting at the 2nd point
     extra_pc2 = np.logspace(
         np.log10(low_pressurec2),
         np.log10(args.max_output_pressurec2),
@@ -178,6 +186,30 @@ invcov_input_input = np.linalg.inv(input_cov) + np.linalg.inv(prior_cov_input_in
 
 conditioned_mean = total_mean + prior_cov_total_input @ invcov_input_input @ (input_phi - input_mean)
 conditioned_cov = prior_cov_total_total - prior_cov_total_input @ invcov_input_input @ prior_cov_input_total
+
+#------------------------
+
+# plot the conditioned process
+
+if args.plot:
+    if args.verbose:
+        print('plotting conditioned process')
+
+    fig = plt.figure()
+
+    raise NotImplementedError('''\
+make a plot of the conditioned process
+    mean and 1D stdv (envelop plot)
+    overlay with a few realizations?
+    plot distributions at a few reference pressures?
+''')
+
+    # save
+    figname = args.output_hdf[:-3] + 'png'
+    if args.verbose:
+        print('    saving : '+figname)
+    fig.savefig(figname)
+    plt.close(fig)
 
 #------------------------
 
