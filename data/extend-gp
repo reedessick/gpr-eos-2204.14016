@@ -105,7 +105,7 @@ if args.pressurec2_scale == 'linear':
     extra_pc2 = np.linspace(low_pressurec2, args.max_output_pressurec2, num+1)[1:] ### do not repeat first point
 
 elif args.pressurec2_scale == 'log':
-    num = np.log(args.max_output_pressurec2 / low_pressurec2) / args.prior_correlation_length)
+    num = np.log(args.max_output_pressurec2 / low_pressurec2) / args.prior_correlation_length
     num *= args.num_pressurec2_points_per_length
     if args.verbose:
         print('placing extension to higher pressures logarithmically with %d points between (%.6e, %.6e) g/cm^3' % \
@@ -113,7 +113,7 @@ elif args.pressurec2_scale == 'log':
     extra_pc2 = np.logspace(np.log10(low_pressurec2), np.log10(args.max_output_pressurec2), num+1)[1:]
 
 else:
-    raise ValueError('could not understand --pc2-scale=%s'%args.pc2_scale)
+    raise ValueError('could not understand --pressurec2-scale=%s'%args.pc2_scale)
 
 #------------------------
 
@@ -136,17 +136,17 @@ elif args.pressurec2_scale == 'log':
 else:
     raise ValueError('--pressurec2-scale=%s not understood!' % args.pressurec2_scale)
 
-raise NotImplementedError('fix this! need to set up my "test" points across the entire range...')
+total_x = np.concatenate((input_x, extra_x))
 
 ### input - input
 prior_cov_input_input = kernel.cov(input_x, input_x)
 
-### input - extension and extension - input
-prior_cov_input_extra = kernel.cov(input_x, extra_x)
-prior_cov_extra_input = np.transpose(prior_cov_input_extra)
+### input - total and total - input
+prior_cov_input_total = kernel.cov(input_x, total_x)
+prior_cov_total_input = np.transpose(prior_cov_input_total)
 
 ### extension - extension
-prior_cov_extra_extra = kernel.cov(extra_x, extra_x, **prior_cov_kwargs)
+prior_cov_total_total = kernel.cov(total_x, total_x)
 
 #-------------------------------------------------
 
@@ -157,10 +157,10 @@ if args.verbose:
     print('computing prior mean as a cubic fit to input process')
 
 p3, p2, p1, p0 = np.polyfit(input_x, input_phi, 3) # use a 3rd order polynomial
-                                         # will force phi to decrease as part of the extrapolation
+                                                   # will force phi to decrease as part of the extrapolation
 
 input_mean = p3*input_x**3 + p2*input_x**2 + p1*input_x + p0
-extra_mean = p3*extra_x**3 + p2*extra_x**2 + p1*extra_x + p0
+total_mean = p3*total_x**3 + p2*total_x**2 + p1*total_x + p0
 
 #-------------------------------------------------
 
@@ -171,6 +171,9 @@ if args.verbose:
 
 raise NotImplementedError('condition the GP on both the input and the prior')
 
+conditioned_mean = None
+conditioned_cov = None
+
 #------------------------
 
 # save
@@ -180,8 +183,16 @@ if args.verbose:
 with h5py.File(args.output_hdf, 'w') as obj:
     group = obj.create_group(os.path.basename(args.input_hdf)[:-4])
 
-    # store meta-data
-    raise NotImplementedError
+    # store command-line arguments
+    group.attrs.create('input_hdf', args.input_hdf)
+    group.attrs.create('max_input_pressurec2', args.max_input_pressurec2)
+
+    group.attrs.create('pressurec2_scale', args.pressurec2_scale)
+    group.attrs.create('max_output_pressurec2', args.max_output_pressurec2)
+    group.attrs.create('num_pressurec2_points_per_length', args.num_pressurec2_points_per_length)
+
+    group.attrs.create('config', args.config)
 
     # store process
-    raise NotImplementedError
+    group.create_dataset('mean', data=conditioned_mean)
+    group.create_dataset('cov', data=conditioned_cov)
