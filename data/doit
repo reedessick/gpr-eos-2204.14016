@@ -91,7 +91,7 @@ do
         --pressurec2-scale 'log' \
         --max-output-pressurec2 1e17 \
         --num-pressurec2-points 500 \
-        --plot \
-        --verbose
+        --verbose \
+#        --plot \
 
 done

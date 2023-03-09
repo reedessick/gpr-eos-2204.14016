@@ -242,5 +242,18 @@ with h5py.File(args.output_hdf, 'w') as obj:
     group.attrs.create('config', args.config)
 
     # store process
-    group.create_dataset('mean', data=conditioned_mean)
+    if args.pressurec2_scale == 'linear':
+        mean = np.empty(len(total_x), dtype=[('pressurec2', float), ('phi', float)])
+        mean['pressurec2'] = total_mean
+
+    elif args.pressurec2_scale == 'log':
+        mean = np.empty(len(total_x), dtype=[('log(pressurec2)', float), ('phi', float)])
+        mean['log(pressurec2)'] = total_mean
+
+    else:
+        raise ValueError('could not understand --pressurec2-scale=%s'%args.pressurec2_scale)
+
+    mean['phi'] = conditioned_mean
+
+    group.create_dataset('mean', data=mean)
     group.create_dataset('cov', data=conditioned_cov)
