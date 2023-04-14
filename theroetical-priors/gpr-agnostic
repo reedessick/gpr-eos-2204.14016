@@ -1,0 +1,277 @@
+#!/bin/bash
+
+### script that conditions agnostic processes on different theories at low-densities
+### Reed Essick (reed.essick@gmail.com)
+
+#-------------------------------------------------
+
+### FIXME! update the following to make the workflow a bit more general!
+
+TAG='qmc'
+
+rootdir="/home/reed.essick/BNS_tides/Esym-from-astro/production-theoretical-priors/${TAG}"
+
+NUM_EOS=250             ### number of EoS we want
+
+#-------------------------------------------------
+# define the source of our "tabluated EoS from the literature"
+#-------------------------------------------------
+
+declare -A hdf5paths
+declare -A selectparampath
+
+basedir="/home/reed.essick/BNS_tides/Esym-from-astro/production-theoretical-priors/processes_from_literature/"
+
+### add hadagn stuff
+
+dir="${basedir}/hadagn"
+
+hdf5paths['had']="${hdf5paths['had']} ${dir}/bsk/gpr_gpr_hadronic-bsk.hdf5"
+hdf5paths['had']="${hdf5paths['had']} ${dir}/bsr/gpr_gpr_hadronic-bsr.hdf5"
+hdf5paths['had']="${hdf5paths['had']} ${dir}/dd/gpr_gpr_hadronic-dd.hdf5"
+hdf5paths['had']="${hdf5paths['had']} ${dir}/eng/gpr_gpr_hadronic-eng.hdf5"
+hdf5paths['had']="${hdf5paths['had']} ${dir}/gm/gpr_gpr_hadronic-gm.hdf5"
+hdf5paths['had']="${hdf5paths['had']} ${dir}/kde/gpr_gpr_hadronic-kde.hdf5"
+hdf5paths['had']="${hdf5paths['had']} ${dir}/mpa/gpr_gpr_hadronic-mpa.hdf5"
+hdf5paths['had']="${hdf5paths['had']} ${dir}/nl/gpr_gpr_hadronic-nl.hdf5"
+hdf5paths['had']="${hdf5paths['had']} ${dir}/r/gpr_gpr_hadronic-r.hdf5"
+hdf5paths['had']="${hdf5paths['had']} ${dir}/sk/gpr_gpr_hadronic-sk.hdf5"
+hdf5paths['had']="${hdf5paths['had']} ${dir}/sly/gpr_gpr_hadronic-sly.hdf5"
+hdf5paths['had']="${hdf5paths['had']} ${dir}/tm/gpr_gpr_hadronic-tm.hdf5"
+
+selectparampath['had']="${dir}/hyperparams-mc_hadronic-agnostic.csv"
+
+### add hypagn stuff
+
+dir="${basedir}/hypagn"
+
+hdf5paths['hyp']="${hdf5paths['hyp']} ${dir}/bsr/gpr_gpr_hyperonic-bsr.hdf5"
+hdf5paths['hyp']="${hdf5paths['hyp']} ${dir}/dd/gpr_gpr_hyperonic-dd.hdf5"
+hdf5paths['hyp']="${hdf5paths['hyp']} ${dir}/gm/gpr_gpr_hyperonic-gm.hdf5"
+hdf5paths['hyp']="${hdf5paths['hyp']} ${dir}/h/gpr_gpr_hyperonic-h.hdf5"
+hdf5paths['hyp']="${hdf5paths['hyp']} ${dir}/nl/gpr_gpr_hyperonic-nl.hdf5"
+hdf5paths['hyp']="${hdf5paths['hyp']} ${dir}/tm/gpr_gpr_hyperonic-tm.hdf5"
+
+selectparampath['hyp']="${dir}/hyperparams-mc_hyperonic-agnostic.csv"
+
+### add qrkagn stuff
+
+dir="${basedir}/qrkagn"
+
+hdf5paths['qrk']="${hdf5paths['qrk']} ${dir}/alf/gpr_gpr_quark-alf.hdf5"
+hdf5paths['qrk']="${hdf5paths['qrk']} ${dir}/ddq/gpr_gpr_quark-ddq.hdf5"
+hdf5paths['qrk']="${hdf5paths['qrk']} ${dir}/hqc/gpr_gpr_quark-hqc.hdf5"
+
+selectparampath['qrk']="${dir}/hyperparams-mc_quark-agnostic.csv"
+
+#-------------------------------------------------
+# define parameters used to construct conditioned processes
+#-------------------------------------------------
+
+num_proc=50
+
+num_points=500
+num_models=50
+
+min_pressurec2="1e10"
+max_pressurec2="1e17"
+min_pressure=$(python -c "from universality import utils ; print utils.c**2*${min_pressurec2}")
+max_pressure=$(python -c "from universality import utils ; print utils.c**2*${max_pressurec2}")
+
+pressure_bounds="$min_pressure $max_pressure"
+
+#------------------------
+
+min_stitch_pressurec2="1e10"
+max_stitch_pressurec2="3e11"
+
+### currated by hand for qmc
+stitch_mean=5.0
+integrate_phi_reference_pressure=3e11
+stitch_pressurec2="3e11"
+
+stitch_index=5
+
+stitch_num_points=25
+
+#---
+
+min_stitch_pressure=$(python -c "from universality import utils ; print utils.c**2*${min_stitch_pressurec2}")
+max_stitch_pressure=$(python -c "from universality import utils ; print utils.c**2*${max_stitch_pressurec2}")
+stitch_pressure=$(python -c "from universality import utils ; print utils.c**2*${stitch_pressurec2}")
+
+stitch_pressure_bounds="$min_stitch_pressure $max_stitch_pressure"
+
+#------------------------
+
+temperature="inf"
+
+CRUST="../ingo-bps-with-cs2c2.csv"
+
+#-------------------------------------------------
+# actually construct the conditioned processes
+#-------------------------------------------------
+
+for comp in "had" "hyp" "qrk"
+do
+
+    html="${rootdir}/gpr-agnostic-${TAG}-${comp}agn.html"
+    rm $html
+
+    for frac in $(seq 0.5 0.1 2.0)
+    do
+
+        echo "PROCESSING $TAG ${comp}agn ${frac}rho_nuc"
+
+        tag="${TAG}-${comp}agn-${frac}rho_nuc"
+        outdir="${rootdir}/${tag}"
+
+        external_process="${rootdir}/eft-eos2gp_${TAG}-${frac}rho_nuc.hdf5"
+
+        #----------------
+        ### create the conditioned GP
+
+#        echo \
+        gpr-gpr \
+            -V \
+            --pressure-bounds $pressure_bounds \
+            --num-points $num_points \
+            --external-process $external_process \
+            --stitch \
+            --stitch-pressure-bounds $stitch_pressure_bounds \
+            --stitch-num-points $stitch_num_points \
+            --stitch-mean $stitch_mean \
+            --stitch-pressure $stitch_pressure \
+            --stitch-index $stitch_index \
+            --plot --grid \
+            --output-dir $outdir \
+            --tag $tag \
+            --temperature $temperature \
+            --hyperparampath ${selectparampath[$comp]} \
+            --max-num-models $num_models \
+            ${hdf5paths[$comp]}
+
+        hdf5model=${outdir}/gpr_gpr_${tag}.hdf5
+
+        #----------------
+        ### draw from resulting GP
+
+#        echo \
+        draw-gpr \
+            -v \
+            -n $NUM_EOS \
+            --plot \
+            --output-dir $outdir \
+            --tag $tag \
+            $hdf5model
+
+        process="${outdir}/manifest-${experiment}$tag.csv"
+        echo "EoS" > $process
+
+        ### integrate the samples
+        samples=""
+        for i in $(seq 0 $(($NUM_EOS-1)))
+        do
+            I=$(python -c "print '%06d'%$i")
+            M=$(python -c "print '%06d'%($i//1000)")
+            phipath="${outdir}/DRAWmod1000-$M/draw-gpr_${tag}-${I}.csv"
+            outpath="${outdir}/DRAWmod1000-$M/eos-draw-${I}.csv"
+
+            samples="$samples -s $I $outpath --samples-alpha $I 0.25 --samples-color $I k"
+
+#            echo \
+            integrate-phi \
+                -v \
+                -o $outpath \
+                --sigma-logpressurec2 0.0 \
+                --stitch-below-reference-pressure \
+                --crust $CRUST \
+                --include-cs2c2 \
+                $phipath $integrate_phi_reference_pressure
+
+            echo $i >> $process
+    
+        done
+
+        ### plot synthetic EoS
+
+        for eos in ./EOSCEFTfull_upperBound_032.csv ./EOSCEFTfull_lowerBound_032.csv
+        do
+            name=$(echo $eos | awk -F '/' '{print $2}' | awk -F '.csv' '{print $1}')
+            samples="$samples -s $name $eos --samples-alpha $name 1.0 --samples-color $name b"
+        done
+
+        samples="$samples -s crust $CRUST --samples-alpha crust 1.0 --samples-color crust r"
+
+#        echo \
+        plot-eos \
+            energy_densityc2 pressurec2 \
+            --logcolumn energy_densityc2 --logcolumn pressurec2 \
+            --column-label energy_densityc2 '$\varepsilon/c^2$' --column-label pressurec2 '$p/c^2$' \
+            --column-range energy_densityc2 1e13 1e15 --column-range pressurec2 1e10 1e15 \
+            -v \
+            -o $outdir \
+            -t pc2-$tag \
+            --grid \
+            $samples
+
+#        echo \
+        plot-eos \
+            energy_densityc2 cs2c2 \
+            --logcolumn energy_densityc2 --logcolumn cs2c2 \
+            --column-label energy_densityc2 '$\varepsilon/c^2$' --column-label cs2c2 '$c_s^2/c^2$' \
+            --column-range energy_densityc2 1e13 1e15 --column-range cs2c2 0.001 1.0 \
+            -v \
+            -o $outdir \
+            -t cs2c2-$tag \
+            --grid \
+            $samples
+
+        ### extract esym parameters
+
+#        echo \
+        esym-eos \
+            $process \
+            --eos-column EoS \
+            --eos-dir $outdir \
+            --eos-num-per-dir 1000 \
+            --eos-basename "eos-draw-%(draw)06d.csv" \
+            --outpath $process \
+            --verbose
+
+        ### plot esym parameters
+
+#        echo \
+        kde-corner-samples \
+            E_PNM S0 L Ksym \
+            --column-label E_PNM '$E_\mathrm{PNM}\,[\mathrm{MeV}]$' \
+            --column-label S0 '$S_0\,[\mathrm{MeV}]$' \
+            --column-label L '$L\,[\mathrm{MeV}]$' \
+            --column-label Ksym '$K_\mathrm{sym}\,[\mathrm{MeV}]$' \
+            --column-band E_PNM 14.2 18.8 \
+            --column-truth E_PNM 16.5 \
+            --column-band L 36.0 44.0 \
+            --column-range E_PNM 10.0 25.0 \
+            --column-range S0 28.0 40.0 \
+            --column-range L 20.0 90.0 \
+            --column-range Ksym -300.0 50.0 \
+            --truth-color b \
+            --band-alpha 0.25 \
+            --samples samples $process \
+            -o $outdir \
+            -t $tag \
+            --num-points 101 \
+            --figwidth 6 --figheight 6 \
+            --rotate-xticklabels 90 \
+            --Verbose
+
+        kde-stats-samples \
+            $process \
+            E_PNM S0 L Ksym \
+            --one-dim-confidence-region-samples 0.68 \
+            --one-dim-confidence-region-samples 0.90 \
+            --verbose \
+        > ${outdir}/kde-stats-samples-${tag}.out
+
+    done
+done
