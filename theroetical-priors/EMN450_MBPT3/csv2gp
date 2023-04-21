@@ -24,8 +24,13 @@ parser = ArgumentParser()
 
 parser.add_argument('csv', nargs='+', type=str)
 
-parser.add_argument('--pressurec2-range', nargs=2, type=float, default=(1e9, 1e13))
-parser.add_argument('--num-pressure-points', type=int, default=51)
+parser.add_argument('--pressurec2-range', nargs=2, type=float, default=(1e9, 1e13),
+    help='the range of pressures retained when making the process')
+
+parser.add_argument('--pressurec2-grid-range', nargs=2, type=float, default=(1e10, 1e17),
+    help='defines the range of pressures used when constructing the grid over pressure')
+parser.add_argument('--num-pressure-points', type=int, default=500,
+    help='the number of points used when constructing the grid over pressure')
 
 parser.add_argument('-S', '--scale', type=float, default=1.0)
 parser.add_argument('-L', '--correlation-length', type=float, default=1.0)
@@ -34,11 +39,16 @@ parser.add_argument('--plot', default=False, action='store_true')
 parser.add_argument('--num-draws', default=0, type=int)
 parser.add_argument('--seed', default=None, type=int)
 
+parser.add_argument('-t', '--tag', default='', type=str)
+
 parser.add_argument('-v', '--verbose', default=False, action='store_true')
 
 args = parser.parse_args()
 
 tag = ('%05.2f_%07.3f'%(args.scale, args.correlation_length)).replace('.', 'd')
+
+if args.tag:
+    tag = tag + "_" + args.tag
 
 #-------------------------------------------------
 
@@ -51,12 +61,19 @@ if args.seed is not None:
 
 if args.verbose:
     print('constructing grid of reference %d pressures within (%.6e, %.6e) g/cm^3' % \
-        (args.num_pressure_points, args.pressurec2_range[0], args.pressurec2_range[1]))
+        (args.num_pressure_points, args.pressurec2_grid_range[0], args.pressurec2_grid_range[1]))
 
-#pc2_test = np.linspace(*args.pressurec2_range, args.num_pressure_points)
-logpc2_test = np.linspace(*np.log(args.pressurec2_range), args.num_pressure_points)
+logpc2_test = np.linspace(*np.log(args.pressurec2_grid_range), args.num_pressure_points)
 
-ones = np.ones(args.num_pressure_points, dtype=float)
+truth = (np.log(args.pressurec2_range[0]) <= logpc2_test) * (logpc2_test <= np.log(args.pressurec2_range[1]))
+if args.verbose:
+    print('retaining grid of %d points between (%.6e, %.6e) g/cm^3' % \
+        (np.sum(truth), args.pressurec2_range[0], args.pressurec2_range[1]))
+
+logpc2_test = logpc2_test[truth]
+num_points = len(logpc2_test)
+
+ones = np.ones(num_points, dtype=float)
 
 #------------------------
 
@@ -69,15 +86,12 @@ for csv in args.csv:
 
     data = np.genfromtxt(csv, names=True, delimiter=',')
 
-#    pc2 = data['pressurec2']
     logpc2 = np.log(data['pressurec2'])
     phi = data['phi']
 
-#    pc2_min = data['minimum_pressurec2']
     logpc2_min = np.log(data['minimum_pressurec2'])
     phi_min = data['minimum_phi']
 
-#    pc2_max = data['maximum_pressurec2']
     logpc2_max = np.log(data['maximum_pressurec2'])
     phi_max = data['maximum_phi']
 
@@ -88,13 +102,8 @@ for csv in args.csv:
     if args.verbose:
         print('    constructing Gaussian process model')
 
-#    phi_test = np.interp(pc2_test, pc2, phi) # just do linear interpolation
     phi_test = np.interp(logpc2_test, logpc2, phi) # just do linear interpolation
-
-#    phi_min_test = np.interp(pc2_test, pc2_min, phi_min)
     phi_min_test = np.interp(logpc2_test, logpc2_min, phi_min)
-
-#    phi_max_test = np.interp(pc2_test, pc2_max, phi_max)
     phi_max_test = np.interp(logpc2_test, logpc2_max, phi_max)
 
     # approximate marginal uncertainty based on spread of max and min
@@ -107,7 +116,6 @@ for csv in args.csv:
     cov = np.outer(stdv, stdv)
 
     ### temper correlations with squared exponential roll-off
-#    cov *= np.exp(-(np.outer(pc2_test, ones)-np.outer(ones, pc2_test))**2 / args.correlation_length**2) 
     cov *= np.exp(-(np.outer(logpc2_test, ones)-np.outer(ones, logpc2_test))**2 / args.correlation_length**2) 
 
     #---
@@ -122,31 +130,24 @@ for csv in args.csv:
         # actual data
         kwargs = dict(color='c', alpha=0.75, marker='.', markersize=1, linestyle='none')
 
-#        ax.plot(pc2_min, phi_min, **kwargs)
         ax.plot(logpc2_min, phi_min, **kwargs)
 
-#        ax.plot(pc2_max, phi_max, **kwargs)
         ax.plot(logpc2_max, phi_max, **kwargs)
 
         kwargs = dict(color='b', alpha=0.75, marker='.', markersize=1, linestyle='none')
-#        ax.plot(pc2, phi, **kwargs)
         ax.plot(logpc2, phi, **kwargs)
 
         # mean function, interpolated
-#        ax.plot(pc2_test, phi_test, color='k')
         ax.plot(logpc2_test, phi_test, color='k')
 
         # marginal covariances
         sigma = np.diag(cov)**0.5
-#        ax.fill_between(pc2_test, phi_test-sigma, phi_test+sigma, color='k', alpha=0.25)
         ax.fill_between(logpc2_test, phi_test-sigma, phi_test+sigma, color='k', alpha=0.25)
 
         # plot realizations on top
         for draw in np.random.multivariate_normal(phi_test, cov, size=args.num_draws):
-#            ax.plot(pc2_test, draw, color='r', alpha=0.75, zorder=-10)
             ax.plot(logpc2_test, draw, color='r', alpha=0.75, zorder=-10)
         
-#        ax.set_xlabel('pressurec2')
         ax.set_xlabel('log(pressurec2)')
 
         ax.set_ylabel('phi')
@@ -180,11 +181,20 @@ for csv in args.csv:
         group.attrs.create('correlation_length', args.correlation_length)
         group.attrs.create('scale', args.scale)
 
-        # create dataset for mean function
-#        data = np.empty(args.num_pressure_points, dtype=[('pressurec2', float), ('phi', float)])
-        data = np.empty(args.num_pressure_points, dtype=[('log(pressurec2)', float), ('phi', float)])
+        # set dummy attributes to make this play nicely with old code...
+        group.attrs.create('weight', np.nan)
+        group.attrs.create('poly_degree', np.nan)
+        group.attrs.create('sigma', np.nan)
+        group.attrs.create('length_scale', np.nan)
+        group.attrs.create('sigma_obs', np.nan)
+        group.attrs.create('model_multiplier', np.nan)
 
-#        data['pressurec2'] = pc2_test
+        group.attrs.create('xlabel', 'log(pressurec2)')
+        group.attrs.create('flabel', 'phi')
+
+        # create dataset for mean function
+        data = np.empty(num_points, dtype=[('log(pressurec2)', float), ('phi', float)])
+
         data['log(pressurec2)'] = logpc2_test
 
         data['phi'] = phi_test

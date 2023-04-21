@@ -164,3 +164,20 @@ for dat in args.dat:
         delimiter=',',
         comments='',
     )
+
+    # save upper and lower bounds as a separate files
+    for tag, keymap in [
+            ('minimum', {'baryon_density':'baryon_density', 'pressurec2':'minimum_pressurec2', 'energy_densityc2':'minimum_energy_densityc2', 'cs2c2':'minimum_cs2c2', 'phi':'minimum_phi'}),
+            ('maximum', {'baryon_density':'baryon_density', 'pressurec2':'maximum_pressurec2', 'energy_densityc2':'maximum_energy_densityc2', 'cs2c2':'maximum_cs2c2', 'phi':'maximum_phi'}),
+        ]:
+        csv = dat[:-4] + '_%s.csv'%tag
+        if args.verbose:
+            print('    saving : '+csv)
+        keys = list(keymap.keys())
+        np.savetxt(
+            csv,
+            np.transpose([ast[keymap[key]] for key in keys]),
+            header=','.join(keys),
+            delimiter=',',
+            comments='',
+        )
