@@ -185,7 +185,7 @@ for csv in args.csv:
         group.attrs.create('scale', args.scale)
 
         # set dummy attributes to make this play nicely with old code...
-        group.attrs.create('weight', np.nan)
+        group.attrs.create('weight', 1.0)
         group.attrs.create('poly_degree', np.nan)
         group.attrs.create('sigma', np.nan)
         group.attrs.create('length_scale', np.nan)

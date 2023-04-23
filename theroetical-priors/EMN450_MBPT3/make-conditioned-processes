@@ -7,8 +7,8 @@
 
 # build simple GP models based on the uncertainty envelopes
 
-SCALE=50.0
-SCALE_NAME="50d00"
+#SCALE=50.0
+#SCALE_NAME="50d00"
 
 #SCALE=5.0
 #SCALE_NAME="05d00"
@@ -16,8 +16,8 @@ SCALE_NAME="50d00"
 #SCALE=1.5
 #SCALE_NAME="01d50"
 
-#SCALE=0.75
-#SCALE_NAME="00d75"
+SCALE=0.75
+SCALE_NAME="00d75"
 
 #SCALE=0.50
 #SCALE_NAME="00d50"
@@ -31,6 +31,14 @@ NUM_GRID_PC2=500
 
 MIN_GRID_PC2="1e10"
 MAX_GRID_PC2="1e17"
+
+#------------------------
+
+NUM_EOS=50
+
+CRUST="../processes_from_literature/ingo-bps-with-cs2c2.csv"
+
+integrate_phi_reference_pressure="3e10"
 
 #------------------------
 
@@ -124,7 +132,8 @@ do
             FTAG="${EFT}_${SCALE_NAME}_${LENGTH_NAME}_${TAG}_${COMP}"
 
 #            echo \
-            gpr-fix-marginal \
+#            python -i \
+            $(which gpr-fix-marginal) \
                 $ORGPROC \
                 $EXTPROC \
                 --plot --grid \
@@ -178,6 +187,97 @@ do
                 --tag $FTAG \
                 --verbose \
             || exit 1
+
+        #-------------------------------------
+
+        ### draw from resulting GP
+
+#        echo \
+        draw-gpr \
+            -v \
+            -n $NUM_EOS \
+            --plot \
+            --output-dir $OUTDIR/$FTAG \
+            --tag $FTAG \
+            $NEWPROC \
+        || exit 1
+
+        process="${OUTDIR}/$FTAG/manifest-${FTAG}.csv"
+        echo "EoS" > $process
+
+        ### integrate the samples
+        samples="" # used to record options for plotting later
+
+        for i in $(seq 0 $(($NUM_EOS-1)))
+        do
+
+            I=$(python -c "print('%06d'%$i)")
+            M=$(python -c "print('%06d'%($i//1000))")
+            phipath="${OUTDIR}/${FTAG}/DRAWmod1000-$M/draw-gpr_${FTAG}-${I}.csv"
+            outpath="${OUTDIR}/${FTAG}/DRAWmod1000-$M/eos-draw-${I}.csv"
+
+            samples="$samples -s $I $outpath --samples-alpha $I 0.25 --samples-color $I k"
+
+#            echo \
+            integrate-phi \
+                -v \
+                -o $outpath \
+                --sigma-logpressurec2 0.0 \
+                --stitch-below-reference-pressure \
+                --crust $CRUST \
+                --include-cs2c2 \
+                $phipath $integrate_phi_reference_pressure \
+            || exit 1
+
+            echo $i >> $process ### add this EoS realization to manifest
+
+        done
+
+        #-------------------------------------
+
+        ### plot synthetic EoS
+
+        for eos in "${OUTDIR}/${EFT}.csv" "${OUTDIR}/${EFT}_minimum.csv" "${OUTDIR}/${EFT}_maximum.csv"
+        do
+            name=$(echo $eos | awk -F '/' '{print $2}' | awk -F '.csv' '{print $1}')
+            samples="$samples -s $name $eos --samples-alpha $name 1.0 --samples-color $name b"
+        done
+
+        samples="$samples -s crust $CRUST --samples-alpha crust 1.0 --samples-color crust r"
+
+#        echo \
+        plot-eos \
+            energy_densityc2 pressurec2 \
+            --logcolumn energy_densityc2 --logcolumn pressurec2 \
+            --column-label energy_densityc2 '$\varepsilon/c^2$' \
+            --column-label pressurec2 '$p/c^2$' \
+            --column-range energy_densityc2 1e13 1e16 \
+            --column-range pressurec2 1e10 1e16 \
+            -v \
+            -o $OUTDIR/$FTAG \
+            -t pc2-$FTAG \
+            --grid \
+            $samples \
+        || exit 1
+
+#            --column-range energy_densityc2 1e13 1e16 \
+#            --column-range pressurec2 1e10 1e16 \
+
+#        echo \
+        plot-eos \
+            energy_densityc2 cs2c2 \
+            --logcolumn energy_densityc2 --logcolumn cs2c2 \
+            --column-label energy_densityc2 '$\varepsilon/c^2$' \
+            --column-label cs2c2 '$c_s^2/c^2$' \
+            --column-range energy_densityc2 1e13 1e16 \
+            --column-range cs2c2 0.001 1.0 \
+            -v \
+            -o $OUTDIR/$FTAG \
+            -t cs2c2-$FTAG \
+            --grid \
+            $samples \
+        || exit 1
+
 
         done
     done
