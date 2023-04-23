@@ -39,11 +39,14 @@ parser.add_argument('--plot', default=False, action='store_true')
 parser.add_argument('--num-draws', default=0, type=int)
 parser.add_argument('--seed', default=None, type=int)
 
+parser.add_argument('-o', '--output-dir', default='.', type=str)
 parser.add_argument('-t', '--tag', default='', type=str)
 
 parser.add_argument('-v', '--verbose', default=False, action='store_true')
 
 args = parser.parse_args()
+
+os.makedirs(args.output_dir, exist_ok=True)
 
 tag = ('%05.2f_%07.3f'%(args.scale, args.correlation_length)).replace('.', 'd')
 
@@ -161,7 +164,7 @@ for csv in args.csv:
             which='both',
         )
 
-        png = csv[:-4]+'_%s.png'%tag
+        png = os.path.join(args.output_dir, os.path.basename(csv)[:-4]+'_%s.png'%tag)
         if args.verbose:
             print('    saving : '+png)
         fig.savefig(png)
@@ -170,7 +173,7 @@ for csv in args.csv:
     #---
 
     # write to disk
-    hdf = csv[:-4] + '_%s.hdf'%tag
+    hdf = os.path.join(args.output_dir, os.path.basename(csv)[:-4] + '_%s.hdf'%tag)
     if args.verbose:
         print('    saving : '+hdf)
 

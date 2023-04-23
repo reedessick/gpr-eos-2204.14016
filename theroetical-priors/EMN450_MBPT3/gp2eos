@@ -38,7 +38,15 @@ parser.add_argument('--reference-pressurec2', default=[], type=float, action='ap
 parser.add_argument('-v', '--verbose', default=False, action='store_true')
 parser.add_argument('-V', '--Verbose', default=False, action='store_true')
 
+parser.add_argument('-o', '--output-dir', default='.', type=str)
+parser.add_argument('-t', '--tag', default='', type=str)
+
 args = parser.parse_args()
+
+os.makedirs(args.output_dir, exist_ok=True)
+
+if args.tag:
+    args.tag = "_"+args.tag
 
 args.verbose |= args.Verbose
 
@@ -52,7 +60,7 @@ if args.seed is not None:
 #-------------------------------------------------
 
 # make sure output directory exists
-dirname = os.path.basename(args.hdf)[:-4]
+dirname = os.path.join(args.output_dir, os.path.basename(args.hdf)[:-4])
 os.makedirs(dirname, exist_ok=True)
 
 # load data
@@ -214,7 +222,7 @@ if args.plot:
         wspace=0.40,
     )
 
-    figname = os.path.join(dirname, os.path.basename(args.hdf)[:-4] + '-samples.png')
+    figname = os.path.join(dirname, os.path.basename(args.hdf)[:-4] + '-samples%s.png'%args.tag)
     if args.verbose:
         print('    saving : '+figname)
     fig.savefig(figname)
@@ -313,7 +321,7 @@ for ref_pc2 in args.reference_pressurec2:
         wspace=0.10,
     )
 
-    tag = ('%.4e'%ref_pc2).replace('.', 'd')
+    tag = ('%.4e'%ref_pc2).replace('.', 'd') + args.tag
     figname = os.path.join(dirname, os.path.basename(args.hdf)[:-4] + '-pc2_%s.png'%tag)
     if args.verbose:
         print('    saving : '+figname)

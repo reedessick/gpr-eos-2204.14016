@@ -15,8 +15,14 @@
 
 # build simple GP models based on the uncertainty envelopes
 
-SCALE=1.5
-SCALE_NAME="01d50"
+SCALE=50.0
+SCALE_NAME="50d00"
+
+#SCALE=5.0
+#SCALE_NAME="05d00"
+
+#SCALE=1.5
+#SCALE_NAME="01d50"
 
 #SCALE=0.75
 #SCALE_NAME="00d75"
@@ -44,6 +50,9 @@ do
         --verbose \
         --tag "maxpc2-$max_pressurec2" \
     || exit 1
+
+    # FIXME
+    # add command to fix marginals
 
 done
 

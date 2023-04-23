@@ -1,0 +1,178 @@
+#!/bin/bash
+
+### a quick script to record workflow
+### Reed Essick (reed.essick@gmail.com)
+
+#-------------------------------------------------
+
+# convert to csv and CGS units
+
+echo \
+./dat2csv \
+    EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands.dat \
+    EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands.dat \
+    --plot \
+    --verbose \
+|| exit 1
+
+#-------------------------------------------------
+
+# build simple GP models based on the uncertainty envelopes
+
+SCALE=50.0
+SCALE_NAME="50d00"
+
+#SCALE=5.0
+#SCALE_NAME="05d00"
+
+#SCALE=1.5
+#SCALE_NAME="01d50"
+
+#SCALE=0.75
+#SCALE_NAME="00d75"
+
+#SCALE=0.50
+#SCALE_NAME="00d50"
+
+LENGTH=4.0
+LENGTH_NAME="004d000"
+
+#------------------------
+
+EFTS=""
+EFTS="$EFTS EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands"
+#EFTS="$EFTS EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands"
+
+#------------------------
+
+MAXPC2S=""
+#MAXPC2S="$MAXPC2S 2e10"
+#MAXPC2S="$MAXPC2S 4e10"
+#MAXPC2S="$MAXPC2S 8e10"
+#MAXPC2S="$MAXPC2S 1e11"
+#MAXPC2S="$MAXPC2S 2e11"
+#MAXPC2S="$MAXPC2S 4e11"
+#MAXPC2S="$MAXPC2S 8e11"
+MAXPC2S="$MAXPC2S 1e12"
+#MAXPC2S="$MAXPC2S 2e12"
+#MAXPC2S="$MAXPC2S 4e12"
+#MAXPC2S="$MAXPC2S 8e12"
+#MAXPC2S="$MAXPC2S 1e13"
+
+#------------------------
+
+COMPDIR="../processes_from_literature"
+
+COMPS=""
+#COMPS="$COMPS hadagn"
+#COMPS="$COMPS hypagn"
+COMPS="$COMPS qrkagn"
+
+#-------------------------------------------------
+
+for EFT in $EFTS
+do
+
+    EFTCSV="${EFT}.csv"
+    OUTDIR=${EFT}
+
+    for MAXPC2 in $MAXPC2S
+    do
+
+        TAG="maxpc2-$MAXPC2"
+
+        #----------------
+
+        # construct external process
+
+#        echo \
+        ./csv2gp \
+            $EFTCSV\
+            --pressurec2-range "1e10" "$MAXPC2" \
+            --pressurec2-grid-range "1e10" "1e17" \
+            --num-pressure-points "501" \
+            --scale $SCALE \
+            --correlation-length $LENGTH \
+            --plot \
+            --num-draws 25 \
+            --verbose \
+            --output-dir $OUTDIR \
+            --tag $tag \
+        || exit 1
+
+        EXTPROC="${OUTDIR}/${EFT}_${SCALE_NAME}_${LENGTH_NAME}_${TAG}.hdf"
+
+        #----------------
+
+        # iterate over compositions, fixing marginal for each
+
+        for COMP in $COMPS
+        do
+
+            ORGPROC="${COMPDIR}/${COMP}/gpr_gpr_${COMP}.hdf5"
+
+            #------------
+
+            # fix the marginal distribution within EFT range
+
+            FTAG="${TAG}_${COMP}"
+
+#            echo \
+            gpr-fix-marginal \
+                $ORGPROC \
+                $EXTPROC \
+                --plot --grid \
+                --output-dir $OUTDIR/$FTAG \
+                --tag $FTAG \
+                --Verbose \
+            || exit 1
+
+            NEWPROC="$OOUTDIR/$FTAG/gpr_fix_marginal_${FTAG}.hdf5"
+
+            #------------
+
+            # draw from GP model and integrate to get pressure - energy_density - baryon_density curves
+
+            echo \
+            ./gp2eos \
+                $NEWPROC \
+                $EFTCSV \
+                --reference-pressurec2 "1.0e9" \
+                --reference-pressurec2 "3.0e9" \
+                --reference-pressurec2 "6.0e9" \
+                --reference-pressurec2 "1.0e10" \
+                --reference-pressurec2 "3.0e10" \
+                --reference-pressurec2 "6.0e10" \
+                --reference-pressurec2 "1.0e11" \
+                --reference-pressurec2 "2.0e11" \
+                --reference-pressurec2 "3.0e11" \
+                --reference-pressurec2 "4.0e11" \
+                --reference-pressurec2 "5.0e11" \
+                --reference-pressurec2 "6.0e11" \
+                --reference-pressurec2 "7.0e11" \
+                --reference-pressurec2 "8.0e11" \
+                --reference-pressurec2 "9.0e11" \
+                --reference-pressurec2 "1.0e12" \
+                --reference-pressurec2 "2.0e12" \
+                --reference-pressurec2 "3.0e12" \
+                --reference-pressurec2 "4.0e12" \
+                --reference-pressurec2 "5.0e12" \
+                --reference-pressurec2 "6.0e12" \
+                --reference-pressurec2 "7.0e12" \
+                --reference-pressurec2 "8.0e12" \
+                --reference-pressurec2 "9.0e12" \
+                --reference-pressurec2 "1.0e13" \
+                --reference-pressurec2 "1.5e13" \
+                --reference-pressurec2 "2.0e13" \
+                --reference-pressurec2 "2.5e13" \
+                --reference-pressurec2 "3.0e13" \
+                --num-draws 1000 \
+                --plot \
+                --output-dir $OUTDIR/$FTAG \
+                --tag $FTAG \
+                --verbose \
+            || exit 1
+
+        done
+    done
+done
