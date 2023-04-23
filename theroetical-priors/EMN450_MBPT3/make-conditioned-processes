@@ -5,18 +5,6 @@
 
 #-------------------------------------------------
 
-# convert to csv and CGS units
-
-echo \
-./dat2csv \
-    EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands.dat \
-    EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands.dat \
-    --plot \
-    --verbose \
-|| exit 1
-
-#-------------------------------------------------
-
 # build simple GP models based on the uncertainty envelopes
 
 SCALE=50.0
@@ -36,6 +24,13 @@ SCALE_NAME="50d00"
 
 LENGTH=4.0
 LENGTH_NAME="004d000"
+
+#------------------------
+
+NUM_GRID_PC2=500
+
+MIN_GRID_PC2="1e10"
+MAX_GRID_PC2="1e17"
 
 #------------------------
 
@@ -73,8 +68,19 @@ COMPS="$COMPS qrkagn"
 for EFT in $EFTS
 do
 
-    EFTCSV="${EFT}.csv"
     OUTDIR=${EFT}
+
+    # convert to csv and CGS units
+
+#    echo \
+    ./dat2csv \
+        "${EFT}.dat" \
+        --plot \
+        --verbose \
+        --output-dir $OUTDIR \
+    || exit 1
+
+    EFTCSV="${OUTDIR}/${EFT}.csv"
 
     for MAXPC2 in $MAXPC2S
     do
@@ -89,15 +95,15 @@ do
         ./csv2gp \
             $EFTCSV\
             --pressurec2-range "1e10" "$MAXPC2" \
-            --pressurec2-grid-range "1e10" "1e17" \
-            --num-pressure-points "501" \
+            --pressurec2-grid-range $MIN_GRID_PC2 $MAX_GRID_PC2\
+            --num-pressure-points $NUM_GRID_PC2 \
             --scale $SCALE \
             --correlation-length $LENGTH \
             --plot \
             --num-draws 25 \
             --verbose \
             --output-dir $OUTDIR \
-            --tag $tag \
+            --tag $TAG \
         || exit 1
 
         EXTPROC="${OUTDIR}/${EFT}_${SCALE_NAME}_${LENGTH_NAME}_${TAG}.hdf"
@@ -115,7 +121,7 @@ do
 
             # fix the marginal distribution within EFT range
 
-            FTAG="${TAG}_${COMP}"
+            FTAG="${EFT}_${SCALE_NAME}_${LENGTH_NAME}_${TAG}_${COMP}"
 
 #            echo \
             gpr-fix-marginal \
@@ -127,13 +133,13 @@ do
                 --Verbose \
             || exit 1
 
-            NEWPROC="$OOUTDIR/$FTAG/gpr_fix_marginal_${FTAG}.hdf5"
+            NEWPROC="$OUTDIR/$FTAG/gpr_fix_marginal_${FTAG}.hdf5"
 
             #------------
 
             # draw from GP model and integrate to get pressure - energy_density - baryon_density curves
 
-            echo \
+#            echo \
             ./gp2eos \
                 $NEWPROC \
                 $EFTCSV \

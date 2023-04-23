@@ -6,6 +6,8 @@ __author__ = "Reed Essick (reed.essick@gmail.com)"
 
 #-------------------------------------------------
 
+import os
+
 import numpy as np
 
 import matplotlib
@@ -37,7 +39,11 @@ parser.add_argument('dat', nargs='+', type=str)
 parser.add_argument('--plot', default=False, action='store_true')
 parser.add_argument('-v', '--verbose', default=False, action='store_true')
 
+parser.add_argument('-o', '--output-dir', default='.', type=str)
+
 args = parser.parse_args()
+
+os.makedirs(args.output_dir, exist_ok=True)
 
 #-------------------------------------------------
 
@@ -147,14 +153,14 @@ for dat in args.dat:
                 which='both',
             )
 
-        figname = dat[:-3] + 'png'
+        figname = os.path.join(args.output_dir, os.path.basename(dat)[:-3] + 'png')
         if args.verbose:
             print('    saving : '+figname)
         fig.savefig(figname)
         plt.close(fig)
 
     # save new file
-    csv = dat[:-3] + 'csv'
+    csv = os.path.join(args.output_dir, os.path.basename(dat)[:-3] + 'csv')
     if args.verbose:
         print('    saving : '+csv)
     np.savetxt(
@@ -170,7 +176,7 @@ for dat in args.dat:
             ('minimum', {'baryon_density':'baryon_density', 'pressurec2':'minimum_pressurec2', 'energy_densityc2':'minimum_energy_densityc2', 'cs2c2':'minimum_cs2c2', 'phi':'minimum_phi'}),
             ('maximum', {'baryon_density':'baryon_density', 'pressurec2':'maximum_pressurec2', 'energy_densityc2':'maximum_energy_densityc2', 'cs2c2':'maximum_cs2c2', 'phi':'maximum_phi'}),
         ]:
-        csv = dat[:-4] + '_%s.csv'%tag
+        csv = os.path.join(args.output_dir, os.path.basename(dat)[:-4] + '_%s.csv'%tag)
         if args.verbose:
             print('    saving : '+csv)
         keys = list(keymap.keys())

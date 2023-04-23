@@ -60,7 +60,7 @@ if args.seed is not None:
 #-------------------------------------------------
 
 # make sure output directory exists
-dirname = os.path.join(args.output_dir, os.path.basename(args.hdf)[:-4])
+dirname = os.path.join(args.output_dir, '.'.join(os.path.basename(args.hdf).split('.')[:-1]))
 os.makedirs(dirname, exist_ok=True)
 
 # load data
@@ -69,9 +69,6 @@ if args.verbose:
 
 with h5py.File(args.hdf, 'r') as obj:
     group = obj[list(obj.keys())[0]]
-
-    correlation_length = group.attrs['correlation_length']
-    scale = group.attrs['scale']
 
     mean = group['mean'][:]
     cov = group['cov'][...]
@@ -222,7 +219,7 @@ if args.plot:
         wspace=0.40,
     )
 
-    figname = os.path.join(dirname, os.path.basename(args.hdf)[:-4] + '-samples%s.png'%args.tag)
+    figname = os.path.join(dirname, '.'.join(os.path.basename(args.hdf).split('.')[:-1]) + '-samples%s.png'%args.tag)
     if args.verbose:
         print('    saving : '+figname)
     fig.savefig(figname)
@@ -322,7 +319,7 @@ for ref_pc2 in args.reference_pressurec2:
     )
 
     tag = ('%.4e'%ref_pc2).replace('.', 'd') + args.tag
-    figname = os.path.join(dirname, os.path.basename(args.hdf)[:-4] + '-pc2_%s.png'%tag)
+    figname = os.path.join(dirname, '.'.join(os.path.basename(args.hdf).split('.')[:-1]) + '-pc2_%s.png'%tag)
     if args.verbose:
         print('    saving : '+figname)
     fig.savefig(figname)
@@ -333,7 +330,7 @@ for ref_pc2 in args.reference_pressurec2:
 # write draws to disk
 if args.verbose:
     print('    saving %d draws'%args.num_draws)
-tmp = os.path.join(dirname, os.path.basename(args.hdf)[:-4] + '_%06d.csv')
+tmp = os.path.join(dirname, '.'.join(os.path.basename(args.hdf).split('.')[:-1]) + '_%06d.csv')
 for ind, draw in enumerate(draws):
     csv = tmp % ind
     if args.Verbose:
