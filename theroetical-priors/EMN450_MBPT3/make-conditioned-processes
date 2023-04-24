@@ -27,13 +27,45 @@ SCALE_NAME="00d75"
 
 #-----------
 
+#LENGTH=0.5
+#LENGTH_NAME="000d500"
+
+#LENGTH=0.75
+#LENGTH_NAME="000d750"
+
+#LENGTH=1.0
+#LENGTH_NAME="001d000"
+
 LENGTH=4.0
 LENGTH_NAME="004d000"
 
 #------------------------
 
-SMOOTHING_LENGTH=0.1
-SMOOTHING_LENGTH_NAME="00d100"
+#SMOOTHING_LENGTH=0.01
+#SMOOTHING_LENGTH_NAME="00d010"
+
+#SMOOTHING_LENGTH=0.1
+#SMOOTHING_LENGTH_NAME="00d100"
+
+#SMOOTHING_LENGTH=0.5
+#SMOOTHING_LENGTH_NAME="00d500"
+
+#SMOOTHING_LENGTH=1.0
+#SMOOTHING_LENGTH_NAME="01d000"
+
+SMOOTHING_LENGTH=5.0
+SMOOTHING_LENGTH_NAME="05d000"
+
+#SMOOTHING_LENGTH=50.0
+#SMOOTHING_LENGTH_NAME="50d000"
+
+#-----------
+
+SMOOTHING_SIGMA=0.00
+SMOOTHING_SIGMA_NAME="00d000"
+
+#SMOOTHING_SIGMA=0.01
+#SMOOTHING_SIGMA_NAME="00d010"
 
 #------------------------
 
@@ -44,8 +76,8 @@ MAX_GRID_PC2="1e17"
 
 #------------------------
 
-NUM_EOS_FOR_DISTRIBUTIONS=1000 ### for distributions at reference pressures
-NUM_EOS_SAMPLES=10             ### for actual realizations (via draw-gpr)
+NUM_EOS_FOR_DISTRIBUTIONS=10000 ### for distributions at reference pressures
+NUM_EOS_SAMPLES=100             ### for actual realizations (via draw-gpr)
 
 #------------------------
 
@@ -65,7 +97,7 @@ MAXPC2S=""
 #MAXPC2S="$MAXPC2S 2e10"
 #MAXPC2S="$MAXPC2S 4e10"
 #MAXPC2S="$MAXPC2S 8e10"
-#MAXPC2S="$MAXPC2S 1e11"
+MAXPC2S="$MAXPC2S 1e11"
 #MAXPC2S="$MAXPC2S 2e11"
 #MAXPC2S="$MAXPC2S 4e11"
 #MAXPC2S="$MAXPC2S 8e11"
@@ -73,15 +105,15 @@ MAXPC2S="$MAXPC2S 1e12"
 #MAXPC2S="$MAXPC2S 2e12"
 #MAXPC2S="$MAXPC2S 4e12"
 #MAXPC2S="$MAXPC2S 8e12"
-#MAXPC2S="$MAXPC2S 1e13"
+MAXPC2S="$MAXPC2S 1e13"
 
 #------------------------
 
 COMPDIR="../processes_from_literature"
 
 COMPS=""
-COMPS="$COMPS hadagn"
-COMPS="$COMPS hypagn"
+#COMPS="$COMPS hadagn"
+#COMPS="$COMPS hypagn"
 COMPS="$COMPS qrkagn"
 
 #-------------------------------------------------
@@ -142,14 +174,14 @@ do
 
             # fix the marginal distribution within EFT range
 
-            FTAG="${EFT}_${SCALE_NAME}_${LENGTH_NAME}_${TAG}_${COMP}_${SMOOTHING_LENGTH_NAME}"
+            FTAG="${EFT}_${SCALE_NAME}_${LENGTH_NAME}_${TAG}_${COMP}_${SMOOTHING_LENGTH_NAME}_${SMOOTHING_SIGMA_NAME}"
 
 #            echo \
-#            python -i \
-            $(which gpr-fix-marginal) \
+            gpr-fix-marginal \
                 $ORGPROC \
                 $EXTPROC \
                 --smoothing-length-scale $SMOOTHING_LENGTH \
+                --smoothing-sigma-noise $SMOOTHING_SIGMA \
                 --plot \
                 --grid \
                 --output-dir $OUTDIR/$FTAG \
@@ -221,8 +253,17 @@ do
         echo "EoS" > $process
 
         ### integrate the samples
-        samples="" # used to record options for plotting later
 
+        reference=""
+        for eos in "${OUTDIR}/${EFT}.csv" "${OUTDIR}/${EFT}_minimum.csv" "${OUTDIR}/${EFT}_maximum.csv"
+        do
+            name=$(echo $eos | awk -F '/' '{print $2}' | awk -F '.csv' '{print $1}')
+            reference="$reference -s $name $eos --samples-alpha $name 0.50 --samples-color $name b"
+        done
+
+        reference="$reference -s crust $CRUST --samples-alpha crust 0.50 --samples-color crust r"
+
+        samples="" # used to record options for plotting later
         for i in $(seq 0 $(($NUM_EOS_SAMPLES-1)))
         do
 
@@ -230,8 +271,6 @@ do
             M=$(python -c "print('%06d'%($i//1000))")
             phipath="${OUTDIR}/${FTAG}/DRAWmod1000-$M/draw-gpr_${FTAG}-${I}.csv"
             outpath="${OUTDIR}/${FTAG}/DRAWmod1000-$M/eos-draw-${I}.csv"
-
-            samples="$samples -s $I $outpath --samples-alpha $I 0.25 --samples-color $I k"
 
 #            echo \
             integrate-phi \
@@ -244,6 +283,42 @@ do
                 $phipath $REFERENCE_PRESSUREC2 \
             || exit 1
 
+            sample="-s $I $outpath --samples-alpha $I 0.25 --samples-color $I k"
+
+            # plot this realization individually
+#            echo \
+            plot-eos \
+                energy_densityc2 pressurec2 \
+                --logcolumn energy_densityc2 --logcolumn pressurec2 \
+                --column-label energy_densityc2 '$\varepsilon/c^2$' \
+                --column-label pressurec2 '$p/c^2$' \
+                --column-range energy_densityc2 2e13 1e15 \
+                --column-range pressurec2 3e10 1e15 \
+                -v \
+                -o $OUTDIR/$FTAG/samples \
+                -t pc2-$FTAG-$i \
+                --grid \
+                $sample $reference \
+            || exit 1
+
+#            echo \
+            plot-eos \
+                energy_densityc2 cs2c2 \
+                --logcolumn energy_densityc2 --logcolumn cs2c2 \
+                --column-label energy_densityc2 '$\varepsilon/c^2$' \
+                --column-label cs2c2 '$c_s^2/c^2$' \
+                --column-range energy_densityc2 2e13 1e15 \
+                --column-range cs2c2 0.002 1.0 \
+                -v \
+                -o $OUTDIR/$FTAG/samples \
+                -t cs2c2-$FTAG-$i \
+                --grid \
+                $sample $reference \
+            || exit 1
+
+
+            samples="$samples $sample"
+
             echo $i >> $process ### add this EoS realization to manifest
 
         done
@@ -251,14 +326,6 @@ do
         #-------------------------------------
 
         ### plot synthetic EoS
-
-        for eos in "${OUTDIR}/${EFT}.csv" "${OUTDIR}/${EFT}_minimum.csv" "${OUTDIR}/${EFT}_maximum.csv"
-        do
-            name=$(echo $eos | awk -F '/' '{print $2}' | awk -F '.csv' '{print $1}')
-            samples="$samples -s $name $eos --samples-alpha $name 1.0 --samples-color $name b"
-        done
-
-        samples="$samples -s crust $CRUST --samples-alpha crust 1.0 --samples-color crust r"
 
 #        echo \
         plot-eos \
@@ -272,11 +339,8 @@ do
             -o $OUTDIR/$FTAG \
             -t pc2-$FTAG \
             --grid \
-            $samples \
+            $samples $reference \
         || exit 1
-
-#            --column-range energy_densityc2 1e13 1e16 \
-#            --column-range pressurec2 1e10 1e16 \
 
 #        echo \
         plot-eos \
@@ -290,9 +354,8 @@ do
             -o $OUTDIR/$FTAG \
             -t cs2c2-$FTAG \
             --grid \
-            $samples \
+            $samples $reference \
         || exit 1
-
 
         done
     done
