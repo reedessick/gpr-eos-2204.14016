@@ -61,8 +61,8 @@ SMOOTHING_LENGTH_NAME="05d000"
 
 #-----------
 
-SMOOTHING_SIGMA=0.00
-SMOOTHING_SIGMA_NAME="00d000"
+SMOOTHING_SIGMA=0.01
+SMOOTHING_SIGMA_NAME="00d010"
 
 #SMOOTHING_SIGMA=0.01
 #SMOOTHING_SIGMA_NAME="00d010"
@@ -76,8 +76,8 @@ MAX_GRID_PC2="1e17"
 
 #------------------------
 
-NUM_EOS_FOR_DISTRIBUTIONS=10000 ### for distributions at reference pressures
-NUM_EOS_SAMPLES=100             ### for actual realizations (via draw-gpr)
+NUM_EOS_FOR_DISTRIBUTIONS=1000 ### for distributions at reference pressures
+NUM_EOS_SAMPLES=1000           ### for actual realizations (via draw-gpr)
 
 #------------------------
 
@@ -88,23 +88,25 @@ REFERENCE_PRESSUREC2="3e10"
 #------------------------
 
 EFTS=""
+
 EFTS="$EFTS EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands"
-#EFTS="$EFTS EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands"
+EFTS="$EFTS EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands"
 
 #------------------------
 
 MAXPC2S=""
-#MAXPC2S="$MAXPC2S 2e10"
-#MAXPC2S="$MAXPC2S 4e10"
-#MAXPC2S="$MAXPC2S 8e10"
+
+MAXPC2S="$MAXPC2S 2e10"
+MAXPC2S="$MAXPC2S 4e10"
+MAXPC2S="$MAXPC2S 8e10"
 MAXPC2S="$MAXPC2S 1e11"
-#MAXPC2S="$MAXPC2S 2e11"
-#MAXPC2S="$MAXPC2S 4e11"
-#MAXPC2S="$MAXPC2S 8e11"
+MAXPC2S="$MAXPC2S 2e11"
+MAXPC2S="$MAXPC2S 4e11"
+MAXPC2S="$MAXPC2S 8e11"
 MAXPC2S="$MAXPC2S 1e12"
-#MAXPC2S="$MAXPC2S 2e12"
-#MAXPC2S="$MAXPC2S 4e12"
-#MAXPC2S="$MAXPC2S 8e12"
+MAXPC2S="$MAXPC2S 2e12"
+MAXPC2S="$MAXPC2S 4e12"
+MAXPC2S="$MAXPC2S 8e12"
 MAXPC2S="$MAXPC2S 1e13"
 
 #------------------------
@@ -112,8 +114,9 @@ MAXPC2S="$MAXPC2S 1e13"
 COMPDIR="../processes_from_literature"
 
 COMPS=""
-#COMPS="$COMPS hadagn"
-#COMPS="$COMPS hypagn"
+
+COMPS="$COMPS hadagn"
+COMPS="$COMPS hypagn"
 COMPS="$COMPS qrkagn"
 
 #-------------------------------------------------
@@ -287,38 +290,36 @@ do
 
             # plot this realization individually
 #            echo \
-            plot-eos \
-                energy_densityc2 pressurec2 \
-                --logcolumn energy_densityc2 --logcolumn pressurec2 \
-                --column-label energy_densityc2 '$\varepsilon/c^2$' \
-                --column-label pressurec2 '$p/c^2$' \
-                --column-range energy_densityc2 2e13 1e15 \
-                --column-range pressurec2 3e10 1e15 \
-                -v \
-                -o $OUTDIR/$FTAG/samples \
-                -t pc2-$FTAG-$i \
-                --grid \
-                $sample $reference \
-            || exit 1
+#            plot-eos \
+#                energy_densityc2 pressurec2 \
+#                --logcolumn energy_densityc2 --logcolumn pressurec2 \
+#                --column-label energy_densityc2 '$\varepsilon/c^2$' \
+#                --column-label pressurec2 '$p/c^2$' \
+#                --column-range energy_densityc2 2e13 1e15 \
+#                --column-range pressurec2 3e10 1e15 \
+#                -v \
+#                -o $OUTDIR/$FTAG/samples \
+#                -t pc2-$FTAG-draw-$I \
+#                --grid \
+#                $sample $reference \
+#            || exit 1
 
 #            echo \
-            plot-eos \
-                energy_densityc2 cs2c2 \
-                --logcolumn energy_densityc2 --logcolumn cs2c2 \
-                --column-label energy_densityc2 '$\varepsilon/c^2$' \
-                --column-label cs2c2 '$c_s^2/c^2$' \
-                --column-range energy_densityc2 2e13 1e15 \
-                --column-range cs2c2 0.002 1.0 \
-                -v \
-                -o $OUTDIR/$FTAG/samples \
-                -t cs2c2-$FTAG-$i \
-                --grid \
-                $sample $reference \
-            || exit 1
-
+#            plot-eos \
+#                energy_densityc2 cs2c2 \
+#                --logcolumn energy_densityc2 --logcolumn cs2c2 \
+#                --column-label energy_densityc2 '$\varepsilon/c^2$' \
+#                --column-label cs2c2 '$c_s^2/c^2$' \
+#                --column-range energy_densityc2 2e13 1e15 \
+#                --column-range cs2c2 0.002 1.0 \
+#                -v \
+#                -o $OUTDIR/$FTAG/samples \
+#                -t cs2c2-$FTAG-draw-$I \
+#                --grid \
+#                $sample $reference \
+#            || exit 1
 
             samples="$samples $sample"
-
             echo $i >> $process ### add this EoS realization to manifest
 
         done
