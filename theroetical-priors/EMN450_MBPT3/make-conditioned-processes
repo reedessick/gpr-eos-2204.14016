@@ -121,6 +121,10 @@ COMPS="$COMPS qrkagn"
 
 #-------------------------------------------------
 
+EOS_COLUMN="eos"
+
+#-------------------------------------------------
+
 for EFT in $EFTS
 do
 
@@ -128,7 +132,7 @@ do
 
     # convert to csv and CGS units
 
-#    echo \
+    echo \
     ./dat2csv \
         "${EFT}.dat" \
         --plot \
@@ -147,7 +151,7 @@ do
 
         # construct external process
 
-#        echo \
+        echo \
         ./csv2gp \
             $EFTCSV\
             --pressurec2-range "1e10" "$MAXPC2" \
@@ -179,7 +183,7 @@ do
 
             FTAG="${EFT}_${SCALE_NAME}_${LENGTH_NAME}_${TAG}_${COMP}_${SMOOTHING_LENGTH_NAME}_${SMOOTHING_SIGMA_NAME}"
 
-#            echo \
+            echo \
             gpr-fix-marginal \
                 $ORGPROC \
                 $EXTPROC \
@@ -198,7 +202,7 @@ do
 
             # draw from GP model and integrate to get pressure - energy_density - baryon_density curves
 
-#            echo \
+            echo \
             ./gp2eos \
                 $NEWPROC \
                 $EFTCSV \
@@ -238,125 +242,190 @@ do
                 --verbose \
             || exit 1
 
-        #-------------------------------------
+            #-------------------------------------
 
-        ### draw from resulting GP
+            ### draw from resulting GP
 
-#        echo \
-        draw-gpr \
-            -v \
-            -n $NUM_EOS_SAMPLES \
-            --plot \
-            --output-dir $OUTDIR/$FTAG \
-            --tag $FTAG \
-            $NEWPROC \
-        || exit 1
-
-        process="${OUTDIR}/$FTAG/manifest-${FTAG}.csv"
-        echo "EoS" > $process
-
-        ### integrate the samples
-
-        reference=""
-        for eos in "${OUTDIR}/${EFT}.csv" "${OUTDIR}/${EFT}_minimum.csv" "${OUTDIR}/${EFT}_maximum.csv"
-        do
-            name=$(echo $eos | awk -F '/' '{print $2}' | awk -F '.csv' '{print $1}')
-            reference="$reference -s $name $eos --samples-alpha $name 0.50 --samples-color $name b"
-        done
-
-        reference="$reference -s crust $CRUST --samples-alpha crust 0.50 --samples-color crust r"
-
-        samples="" # used to record options for plotting later
-        for i in $(seq 0 $(($NUM_EOS_SAMPLES-1)))
-        do
-
-            I=$(python -c "print('%06d'%$i)")
-            M=$(python -c "print('%06d'%($i//1000))")
-            phipath="${OUTDIR}/${FTAG}/DRAWmod1000-$M/draw-gpr_${FTAG}-${I}.csv"
-            outpath="${OUTDIR}/${FTAG}/DRAWmod1000-$M/eos-draw-${I}.csv"
-
-#            echo \
-            integrate-phi \
+            echo \
+            draw-gpr \
                 -v \
-                -o $outpath \
-                --sigma-logpressurec2 0.0 \
-                --stitch-below-reference-pressure \
-                --crust $CRUST \
-                --include-cs2c2 \
-                $phipath $REFERENCE_PRESSUREC2 \
+                -n $NUM_EOS_SAMPLES \
+                --plot \
+                --output-dir $OUTDIR/$FTAG \
+                --tag $FTAG \
+                $NEWPROC \
             || exit 1
 
-            sample="-s $I $outpath --samples-alpha $I 0.25 --samples-color $I k"
+            MANIFEST="${OUTDIR}/$FTAG/manifest-${FTAG}.csv"
+            echo $EOS_COLUMN > $MANIFEST
 
-            # plot this realization individually
+            ### integrate the samples
+
+            reference=""
+            for eos in "${OUTDIR}/${EFT}.csv" "${OUTDIR}/${EFT}_minimum.csv" "${OUTDIR}/${EFT}_maximum.csv"
+            do
+                name=$(echo $eos | awk -F '/' '{print $2}' | awk -F '.csv' '{print $1}')
+                reference="$reference -s $name $eos --samples-alpha $name 0.50 --samples-color $name b"
+            done
+
+            reference="$reference -s crust $CRUST --samples-alpha crust 0.50 --samples-color crust r"
+
+            samples=""    # used to record options for plotting later
+            macsamples=""
+
+            for i in $(seq 0 $(($NUM_EOS_SAMPLES-1)))
+            do
+
+                I=$(python -c "print('%06d'%$i)")
+                M=$(python -c "print('%06d'%($i//1000))")
+                phipath="${OUTDIR}/${FTAG}/DRAWmod1000-$M/draw-gpr_${FTAG}-${I}.csv"
+                outpath="${OUTDIR}/${FTAG}/DRAWmod1000-$M/eos-draw-${I}.csv"
+                macpath="${OUTDIR}/${FTAG}/DRAWmod1000-$M/macro-draw-${I}.csv"
+
+                echo \
+                integrate-phi \
+                    -v \
+                    -o $outpath \
+                    --sigma-logpressurec2 0.0 \
+                    --stitch-below-reference-pressure \
+                    --crust $CRUST \
+                    --include-cs2c2 \
+                    $phipath $REFERENCE_PRESSUREC2 \
+                || exit 1
+
+                sample="-s $I $outpath --samples-alpha $I 0.25 --samples-color $I k"
+
+                # plot this realization individually
+#                echo \
+#                plot-eos \
+#                    energy_densityc2 pressurec2 \
+#                    --logcolumn energy_densityc2 --logcolumn pressurec2 \
+#                    --column-label energy_densityc2 '$\varepsilon/c^2$' \
+#                    --column-label pressurec2 '$p/c^2$' \
+#                    --column-range energy_densityc2 2e13 1e15 \
+#                    --column-range pressurec2 3e10 1e15 \
+#                    -v \
+#                    -o $OUTDIR/$FTAG/samples \
+#                    -t pc2-$FTAG-draw-$I \
+#                    --grid \
+#                    $sample $reference \
+#                || exit 1
+
+#                echo \
+#                plot-eos \
+#                    energy_densityc2 cs2c2 \
+#                    --logcolumn energy_densityc2 --logcolumn cs2c2 \
+#                    --column-label energy_densityc2 '$\varepsilon/c^2$' \
+#                    --column-label cs2c2 '$c_s^2/c^2$' \
+#                    --column-range energy_densityc2 2e13 1e15 \
+#                    --column-range cs2c2 0.002 1.0 \
+#                    -v \
+#                    -o $OUTDIR/$FTAG/samples \
+#                    -t cs2c2-$FTAG-draw-$I \
+#                    --grid \
+#                    $sample $reference \
+#                || exit 1
+
+                samples="$samples $sample"
+                macsamples="$macsamples -s $I $macpath --samples-alpha $I 0.25 --samples-color $I k"
+
+                echo $i >> $MANIFEST ### add this EoS realization to manifest
+
+            done
+
+            #-------------------------------------
+
+            ### plot synthetic EoS
+
+            echo \
+            plot-eos \
+                energy_densityc2 pressurec2 \
+                --logcolumn energy_densityc2 --logcolumn pressurec2 \
+                --column-label energy_densityc2 '$\varepsilon/c^2$' \
+                --column-label pressurec2 '$p/c^2$' \
+                --column-range energy_densityc2 1e13 1e16 \
+                --column-range pressurec2 1e10 1e16 \
+                -v \
+                -o $OUTDIR/$FTAG \
+                -t pc2-$FTAG \
+                --grid \
+                $samples $reference \
+            || exit 1
+
+            echo \
+            plot-eos \
+                energy_densityc2 cs2c2 \
+                --logcolumn energy_densityc2 --logcolumn cs2c2 \
+                --column-label energy_densityc2 '$\varepsilon/c^2$' \
+                --column-label cs2c2 '$c_s^2/c^2$' \
+                --column-range energy_densityc2 1e13 1e16 \
+                --column-range cs2c2 0.001 1.0 \
+                -v \
+                -o $OUTDIR/$FTAG \
+                -t cs2c2-$FTAG \
+                --grid \
+                $samples $reference \
+            || exit 1
+
+            #-------------------------------------
+
+            # integrate the TOV equations
+
 #            echo \
-#            plot-eos \
-#                energy_densityc2 pressurec2 \
-#                --logcolumn energy_densityc2 --logcolumn pressurec2 \
-#                --column-label energy_densityc2 '$\varepsilon/c^2$' \
-#                --column-label pressurec2 '$p/c^2$' \
-#                --column-range energy_densityc2 2e13 1e15 \
-#                --column-range pressurec2 3e10 1e15 \
-#                -v \
-#                -o $OUTDIR/$FTAG/samples \
-#                -t pc2-$FTAG-draw-$I \
-#                --grid \
-#                $sample $reference \
-#            || exit 1
+            process2tov \
+                $MANIFEST \
+                "1e11" "1e17" \
+                --pressurec2-column "pressurec2" \
+                --energy_densityc2-column "energy_densityc2" \
+                --baryon_density-column "baryon_density" \
+                --cs2c2-column "cs2c2" \
+                --central-baryon-density-range "1e13" "1.4e16" \
+                --central-eos-column "pressurec2" \
+                --central-eos-column "energy_densityc2" \
+                --central-eos-column "baryon_density" \
+                --central-eos-column "cs2c2" \
+                --formalism "logenthalpy" \
+                --min-num-models "50" \
+                --interpolator-rtol "1e-2" \
+                --integration-rtol "1e-4" \
+                --eos-column $EOS_COLUMN \
+                --eos-dir ${OUTDIR}/${FTAG} \
+                --eos-num-per-dir "1000" \
+                --eos-basename "eos-draw-%(draw)06d.csv" \
+                --macro-basename "macro-draw-%(draw)06d.csv" \
+                --Verbose \
+            || exit 1
+
+            # now plot the resulting EoS
 
 #            echo \
-#            plot-eos \
-#                energy_densityc2 cs2c2 \
-#                --logcolumn energy_densityc2 --logcolumn cs2c2 \
-#                --column-label energy_densityc2 '$\varepsilon/c^2$' \
-#                --column-label cs2c2 '$c_s^2/c^2$' \
-#                --column-range energy_densityc2 2e13 1e15 \
-#                --column-range cs2c2 0.002 1.0 \
-#                -v \
-#                -o $OUTDIR/$FTAG/samples \
-#                -t cs2c2-$FTAG-draw-$I \
-#                --grid \
-#                $sample $reference \
-#            || exit 1
+            plot-eos \
+                R M \
+                --column-label R '$R\,[\mathrm{km}]$' \
+                --column-label M '$M\,[M_\odot]$' \
+                --column-range R 5.0 20 \
+                --column-range M 0.1 3.0 \
+                -v \
+                -o $OUTDIR/$FTAG \
+                -t M-R-$FTAG \
+                --grid \
+                $macsamples \
+            || exit 1
 
-            samples="$samples $sample"
-            echo $i >> $process ### add this EoS realization to manifest
-
-        done
-
-        #-------------------------------------
-
-        ### plot synthetic EoS
-
-#        echo \
-        plot-eos \
-            energy_densityc2 pressurec2 \
-            --logcolumn energy_densityc2 --logcolumn pressurec2 \
-            --column-label energy_densityc2 '$\varepsilon/c^2$' \
-            --column-label pressurec2 '$p/c^2$' \
-            --column-range energy_densityc2 1e13 1e16 \
-            --column-range pressurec2 1e10 1e16 \
-            -v \
-            -o $OUTDIR/$FTAG \
-            -t pc2-$FTAG \
-            --grid \
-            $samples $reference \
-        || exit 1
-
-#        echo \
-        plot-eos \
-            energy_densityc2 cs2c2 \
-            --logcolumn energy_densityc2 --logcolumn cs2c2 \
-            --column-label energy_densityc2 '$\varepsilon/c^2$' \
-            --column-label cs2c2 '$c_s^2/c^2$' \
-            --column-range energy_densityc2 1e13 1e16 \
-            --column-range cs2c2 0.001 1.0 \
-            -v \
-            -o $OUTDIR/$FTAG \
-            -t cs2c2-$FTAG \
-            --grid \
-            $samples $reference \
-        || exit 1
+#            echo \
+            plot-eos \
+                M Lambda \
+                --logcolumn Lambda \
+                --column-label Lambda '$\Lambda$' \
+                --column-label M '$M\,[M_\odot]$' \
+                --column-range Lambda 1.0 10000 \
+                --column-range M 0.1 3.0 \
+                -v \
+                -o $OUTDIR/$FTAG \
+                -t M-Lambda-$FTAG \
+                --grid \
+                $macsamples \
+            || exit 1
 
         done
     done
