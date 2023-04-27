@@ -337,7 +337,7 @@ do
 
             ### plot synthetic EoS
 
-            echo \
+#            echo \
             plot-eos \
                 energy_densityc2 pressurec2 \
                 --logcolumn energy_densityc2 --logcolumn pressurec2 \
@@ -352,7 +352,7 @@ do
                 $samples $reference \
             || exit 1
 
-            echo \
+#            echo \
             plot-eos \
                 energy_densityc2 cs2c2 \
                 --logcolumn energy_densityc2 --logcolumn cs2c2 \
@@ -371,7 +371,7 @@ do
 
             # integrate the TOV equations
 
-#            echo \
+            echo \
             process2tov \
                 $MANIFEST \
                 "1e11" "1e17" \
