@@ -79,7 +79,7 @@ MAX_GRID_PC2="1e17"
 NUM_EOS_FOR_DISTRIBUTIONS=1000 ### for distributions at reference pressures
 
 #NUM_EOS_SAMPLES=1000           ### for actual realizations (via draw-gpr)
-NUM_EOS_SAMPLES=25           ### for actual realizations (via draw-gpr)
+NUM_EOS_SAMPLES=50           ### for actual realizations (via draw-gpr)
 
 #------------------------
 
@@ -102,7 +102,8 @@ MAXPC2S=""
 #MAXPC2S="$MAXPC2S 4e10"
 #MAXPC2S="$MAXPC2S 8e10"
 #MAXPC2S="$MAXPC2S 1e11"
-#MAXPC2S="$MAXPC2S 2e11"
+
+#MAXPC2S="$MAXPC2S 2e11" ### we switch to the crust at p/c2 ~ 2.7e11 g/cm^3
 #MAXPC2S="$MAXPC2S 4e11"
 #MAXPC2S="$MAXPC2S 8e11"
 #MAXPC2S="$MAXPC2S 1e12"
