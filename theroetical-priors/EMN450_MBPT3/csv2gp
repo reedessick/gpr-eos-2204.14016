@@ -33,7 +33,15 @@ parser.add_argument('--num-pressure-points', type=int, default=500,
     help='the number of points used when constructing the grid over pressure')
 
 parser.add_argument('-S', '--scale', type=float, default=1.0)
-parser.add_argument('-L', '--correlation-length', type=float, default=1.0)
+parser.add_argument('-L', '--correlation-length', type=float, default=3.0)
+
+parser.add_argument('--crust', type=str, required=True,
+    help='a CSV of the crust EoS to which we will match the EFT band')
+parser.add_argument('--crust-min-baryon-density', default=2.8e12, type=float,
+    help='ignore the crust below this baryon density (specified in CGS). \
+DEFAULT is 0.01 * saturation (2.8e12)')
+parser.add_argument('--stitch-delta-logpc2', default=1, type=float,
+    help='controls how quickly we squash uncertainty around the crust')
 
 parser.add_argument('--plot', default=False, action='store_true')
 parser.add_argument('--num-draws', default=0, type=int)
@@ -59,6 +67,22 @@ if args.seed is not None:
     if args.verbose:
         print('setting seed=%d'%args.seed)
     np.random.seed(args.seed)
+
+#-------------------------------------------------
+
+if args.verbose:
+    print('loading crust from : '+args.crust)
+crust = np.genfromtxt(args.crust, names=True, delimiter=',')
+
+baryon_density_crust = crust['baryon_density']
+
+sel = baryon_density_crust >= args.crust_min_baryon_density
+
+phi_crust = np.log(1./crust['cs2c2'][sel] - 1)
+logpc2_crust = np.log(crust['pressurec2'][sel])
+baryon_density_crust = baryon_density_crust[sel]
+
+Ncrust = len(logpc2_crust)
 
 #-------------------------------------------------
 
@@ -113,12 +137,40 @@ for csv in args.csv:
     stdv = (0.5*((phi_test - phi_min_test)**2 + (phi_test - phi_max_test)**2))**0.5
     stdv *= args.scale # inflate or deflate wiggles
 
+    #---
+
+    # find the max density at which the crust and EFT band cross
+
+    for ind in range(Ncrust):
+        if phi_crust[Ncrust-1-ind] < np.interp(logpc2_crust[Ncrust-1-ind], logpc2, phi):
+            break
+    else:
+        raise RuntimeError('could not find density at which crust and EFT mean cross')
+
+    if args.verbose:
+        print('    switching to crust below log(pressurec2 [g/cm^3]) = %.3e (baryon_density ~ %.3e g/cm^3 = %.3f sat)' \
+            % (logpc2_crust[Ncrust-1-ind], baryon_density_crust[Ncrust-1-ind], baryon_density_crust[Ncrust-1-ind]/2.8e14))
+
+    logpc2_stitch = logpc2_crust[Ncrust-1-ind] ### trust the crust up to here, then switch to EFT mean
+
+    # now actually stitch the crust onto the EFT band
+    sel = logpc2_test < logpc2_stitch
+    ect = np.logical_not(sel)
+
+    phi_mean = np.concatenate((np.interp(logpc2_test[sel], logpc2_crust, phi_crust), phi_test[ect]))
+
+    ### squeeze uncertainty below stitching point
+    stdv[sel] *= 0.5 * (1 + np.cos((logpc2_test[sel] - logpc2_stitch)/args.stitch_delta_logpc2))
+
+    #---
+
     # construct funny-looking covariance matrix that builds in squared-exponential correlations in log(p/c2)
 
     ### basic outer product
     cov = np.outer(stdv, stdv)
 
     ### temper correlations with squared exponential roll-off
+    ones = np.ones(num_points, dtype=float)
     cov *= np.exp(-(np.outer(logpc2_test, ones)-np.outer(ones, logpc2_test))**2 / args.correlation_length**2) 
 
     #---
@@ -129,6 +181,12 @@ for csv in args.csv:
 
         fig = plt.figure()
         ax = fig.gca()
+
+        # crust
+        kwargs = dict(color='g', alpha=0.75, marker='o', markersize=2, linestyle='solid')
+
+        sel = (logpc2_crust >= 20) # put a reasonable bound on the plot
+        ax.plot(logpc2_crust[sel], phi_crust[sel], **kwargs)
 
         # actual data
         kwargs = dict(color='c', alpha=0.75, marker='.', markersize=1, linestyle='none')
@@ -141,18 +199,17 @@ for csv in args.csv:
         ax.plot(logpc2, phi, **kwargs)
 
         # mean function, interpolated
-        ax.plot(logpc2_test, phi_test, color='k')
+        ax.plot(logpc2_test, phi_mean, color='k')
 
         # marginal covariances
         sigma = np.diag(cov)**0.5
-        ax.fill_between(logpc2_test, phi_test-sigma, phi_test+sigma, color='k', alpha=0.25)
+        ax.fill_between(logpc2_test, phi_mean-sigma, phi_mean+sigma, color='k', alpha=0.25)
 
         # plot realizations on top
-        for draw in np.random.multivariate_normal(phi_test, cov, size=args.num_draws):
-            ax.plot(logpc2_test, draw, color='r', alpha=0.75, zorder=-10)
+        for draw in np.random.multivariate_normal(phi_mean, cov, size=args.num_draws):
+            ax.plot(logpc2_test, draw, color='r', alpha=0.25, zorder=-10)
         
         ax.set_xlabel('log(pressurec2)')
-
         ax.set_ylabel('phi')
 
         ax.tick_params(
@@ -167,7 +224,7 @@ for csv in args.csv:
         png = os.path.join(args.output_dir, os.path.basename(csv)[:-4]+'_%s.png'%tag)
         if args.verbose:
             print('    saving : '+png)
-        fig.savefig(png)
+        fig.savefig(png, dpi=500)
         plt.close(fig)
 
     #---
@@ -200,7 +257,7 @@ for csv in args.csv:
 
         data['log(pressurec2)'] = logpc2_test
 
-        data['phi'] = phi_test
+        data['phi'] = phi_mean
 
         group.create_dataset('mean', data=data)
 
