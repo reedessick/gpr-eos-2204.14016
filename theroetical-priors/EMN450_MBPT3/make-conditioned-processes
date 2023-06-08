@@ -27,17 +27,23 @@ SCALE_NAME="00d75"
 
 #-----------
 
+#LENGTH=0.05
+#LENGTH_NAME="000d050"
+
+#LENGTH=0.25
+#LENGTH_NAME="000d250"
+
 #LENGTH=0.5
 #LENGTH_NAME="000d500"
 
 #LENGTH=0.75
 #LENGTH_NAME="000d750"
 
-#LENGTH=1.0
-#LENGTH_NAME="001d000"
+LENGTH=1.0
+LENGTH_NAME="001d000"
 
-LENGTH=4.0
-LENGTH_NAME="004d000"
+#LENGTH=4.0
+#LENGTH_NAME="004d000"
 
 #------------------------
 
@@ -92,7 +98,7 @@ REFERENCE_PRESSUREC2="3e10"
 EFTS=""
 
 EFTS="$EFTS EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands"
-#EFTS="$EFTS EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands"
+EFTS="$EFTS EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands"
 
 #------------------------
 
@@ -106,7 +112,7 @@ MAXPC2S=""
 #MAXPC2S="$MAXPC2S 2e11" ### we switch to the crust at p/c2 ~ 2.7e11 g/cm^3
 #MAXPC2S="$MAXPC2S 4e11"
 #MAXPC2S="$MAXPC2S 8e11"
-#MAXPC2S="$MAXPC2S 1e12"
+MAXPC2S="$MAXPC2S 1e12"
 #MAXPC2S="$MAXPC2S 2e12"
 #MAXPC2S="$MAXPC2S 4e12"
 #MAXPC2S="$MAXPC2S 8e12"
@@ -118,9 +124,20 @@ COMPDIR="../processes_from_literature"
 
 COMPS=""
 
-#COMPS="$COMPS hadagn"
-#COMPS="$COMPS hypagn"
+COMPS="$COMPS hadagn"
+COMPS="$COMPS hypagn"
 COMPS="$COMPS qrkagn"
+
+#------------------------
+
+STITCH_LOGIC=""
+declare -A STITCH_ARGS
+
+STITCH_LOGIC="$STITCH_LOGIC switch"
+STITCH_ARGS["switch"]="--stitch-switch-delta-logpc2 2.0 --stitch-switch-pow 1.0"
+
+STITCH_LOGIC="$STITCH_LOGIC condition"
+STITCH_ARGS["condition"]="--stitch-condition-sigma 1e-2 --stitch-condition-correlation-length 0.25 --stitch-condition-squeeze-pressurec2 2e11 --stitch-condition-squeeze-pow 3.0"
 
 #-------------------------------------------------
 
@@ -131,7 +148,7 @@ EOS_COLUMN="eos"
 for EFT in $EFTS
 do
 
-    OUTDIR="2023-06-02_${EFT}"
+    OUTDIR="2023-06-08-${EFT}"
 
     # convert to csv and CGS units
 
@@ -154,283 +171,289 @@ do
 
         # construct external process
 
-#        echo \
-        ./csv2gp \
-            $EFTCSV\
-            --pressurec2-range "1e10" "$MAXPC2" \
-            --pressurec2-grid-range $MIN_GRID_PC2 $MAX_GRID_PC2\
-            --num-pressure-points $NUM_GRID_PC2 \
-            --scale $SCALE \
-            --correlation-length $LENGTH \
-            --crust $CRUST \
-            --plot \
-            --num-draws 25 \
-            --verbose \
-            --output-dir $OUTDIR \
-            --tag $TAG \
-        || exit 1
-
-        EXTPROC="${OUTDIR}/${EFT}_${SCALE_NAME}_${LENGTH_NAME}_${TAG}.hdf"
-
-        #----------------
-
-        # iterate over compositions, fixing marginal for each
-
-        for COMP in $COMPS
+        for LOGIC in $STITCH_LOGIC
         do
 
-            ORGPROC="${COMPDIR}/${COMP}/gpr_gpr_${COMP}.hdf5"
-
-            #------------
-
-            # fix the marginal distribution within EFT range
-
-            FTAG="${EFT}_${SCALE_NAME}_${LENGTH_NAME}_${TAG}_${COMP}_${SMOOTHING_LENGTH_NAME}_${SMOOTHING_SIGMA_NAME}"
-
 #            echo \
-            gpr-fix-marginal \
-                $ORGPROC \
-                $EXTPROC \
-                --smoothing-length-scale $SMOOTHING_LENGTH \
-                --smoothing-sigma-noise $SMOOTHING_SIGMA \
+            ./csv2gp \
+                $EFTCSV\
+                --pressurec2-range "1e10" "$MAXPC2" \
+                --pressurec2-grid-range $MIN_GRID_PC2 $MAX_GRID_PC2\
+                --num-pressure-points $NUM_GRID_PC2 \
+                --scale $SCALE \
+                --correlation-length $LENGTH \
+                --crust $CRUST \
+                --stitch-logic $LOGIC \
+                ${STITCH_ARGS[$LOGIC]} \
                 --plot \
-                --grid \
-                --output-dir $OUTDIR/$FTAG \
-                --tag $FTAG \
-                --Verbose \
-            || exit 1
-
-            NEWPROC="$OUTDIR/$FTAG/gpr_fix_marginal_${FTAG}.hdf5"
-
-            #------------
-
-            # draw from GP model and integrate to get pressure - energy_density - baryon_density curves
-
-#            echo \
-            ./gp2eos \
-                $NEWPROC \
-                $EFTCSV \
-                --reference-pressurec2 "1.0e9" \
-                --reference-pressurec2 "3.0e9" \
-                --reference-pressurec2 "6.0e9" \
-                --reference-pressurec2 "1.0e10" \
-                --reference-pressurec2 "3.0e10" \
-                --reference-pressurec2 "6.0e10" \
-                --reference-pressurec2 "1.0e11" \
-                --reference-pressurec2 "2.0e11" \
-                --reference-pressurec2 "3.0e11" \
-                --reference-pressurec2 "4.0e11" \
-                --reference-pressurec2 "5.0e11" \
-                --reference-pressurec2 "6.0e11" \
-                --reference-pressurec2 "7.0e11" \
-                --reference-pressurec2 "8.0e11" \
-                --reference-pressurec2 "9.0e11" \
-                --reference-pressurec2 "1.0e12" \
-                --reference-pressurec2 "2.0e12" \
-                --reference-pressurec2 "3.0e12" \
-                --reference-pressurec2 "4.0e12" \
-                --reference-pressurec2 "5.0e12" \
-                --reference-pressurec2 "6.0e12" \
-                --reference-pressurec2 "7.0e12" \
-                --reference-pressurec2 "8.0e12" \
-                --reference-pressurec2 "9.0e12" \
-                --reference-pressurec2 "1.0e13" \
-                --reference-pressurec2 "1.5e13" \
-                --reference-pressurec2 "2.0e13" \
-                --reference-pressurec2 "2.5e13" \
-                --reference-pressurec2 "3.0e13" \
-                --num-draws $NUM_EOS_FOR_DISTRIBUTIONS \
-                --plot \
-                --output-dir $OUTDIR/$FTAG \
-                --tag $FTAG \
+                --num-draws 25 \
                 --verbose \
+                --output-dir $OUTDIR \
+                --tag ${LOGIC}_${TAG} \
             || exit 1
 
-            #-------------------------------------
+            EXTPROC="${OUTDIR}/${EFT}_${SCALE_NAME}_${LENGTH_NAME}_${LOGIC}_${TAG}.hdf"
 
-            ### draw from resulting GP
+            #----------------
 
-#            echo \
-            draw-gpr \
-                -v \
-                -n $NUM_EOS_SAMPLES \
-                --plot \
-                --output-dir $OUTDIR/$FTAG \
-                --tag $FTAG \
-                $NEWPROC \
-            || exit 1
+            # iterate over compositions, fixing marginal for each
 
-            MANIFEST="${OUTDIR}/$FTAG/manifest-${FTAG}.csv"
-            echo $EOS_COLUMN > $MANIFEST
-
-            ### integrate the samples
-
-            reference=""
-            for eos in "${OUTDIR}/${EFT}.csv" "${OUTDIR}/${EFT}_minimum.csv" "${OUTDIR}/${EFT}_maximum.csv"
-            do
-                name=$(echo $eos | awk -F '/' '{print $2}' | awk -F '.csv' '{print $1}')
-                reference="$reference -s $name $eos --samples-alpha $name 0.50 --samples-color $name b"
-            done
-
-            reference="$reference -s crust $CRUST --samples-alpha crust 0.50 --samples-color crust r"
-
-            samples=""    # used to record options for plotting later
-            macsamples=""
-
-            for i in $(seq 0 $(($NUM_EOS_SAMPLES-1)))
+            for COMP in $COMPS
             do
 
-                I=$(python -c "print('%06d'%$i)")
-                M=$(python -c "print('%06d'%($i//1000))")
-                phipath="${OUTDIR}/${FTAG}/DRAWmod1000-$M/draw-gpr_${FTAG}-${I}.csv"
-                outpath="${OUTDIR}/${FTAG}/DRAWmod1000-$M/eos-draw-${I}.csv"
-                macpath="${OUTDIR}/${FTAG}/DRAWmod1000-$M/macro-draw-${I}.csv"
+                ORGPROC="${COMPDIR}/${COMP}/gpr_gpr_${COMP}.hdf5"
+
+                #------------
+
+                # fix the marginal distribution within EFT range
+
+                FTAG="${EFT}_${SCALE_NAME}_${LENGTH_NAME}_${LOGIC}_${TAG}_${COMP}_${SMOOTHING_LENGTH_NAME}_${SMOOTHING_SIGMA_NAME}"
 
 #                echo \
-                integrate-phi \
-                    -v \
-                    -o $outpath \
-                    --sigma-logpressurec2 0.0 \
-                    --stitch-below-reference-pressure \
-                    --crust $CRUST \
-                    --include-cs2c2 \
-                    $phipath $REFERENCE_PRESSUREC2 \
+                gpr-fix-marginal \
+                    $ORGPROC \
+                    $EXTPROC \
+                    --smoothing-length-scale $SMOOTHING_LENGTH \
+                    --smoothing-sigma-noise $SMOOTHING_SIGMA \
+                    --plot \
+                    --grid \
+                    --output-dir $OUTDIR/$FTAG \
+                    --tag $FTAG \
+                    --Verbose \
                 || exit 1
 
-                sample="-s $I $outpath --samples-alpha $I 0.25 --samples-color $I k"
+                NEWPROC="$OUTDIR/$FTAG/gpr_fix_marginal_${FTAG}.hdf5"
 
-                # plot this realization individually
-#                echo \
-#                plot-eos \
-#                    energy_densityc2 pressurec2 \
-#                    --logcolumn energy_densityc2 --logcolumn pressurec2 \
-#                    --column-label energy_densityc2 '$\varepsilon/c^2$' \
-#                    --column-label pressurec2 '$p/c^2$' \
-#                    --column-range energy_densityc2 2e13 1e15 \
-#                    --column-range pressurec2 3e10 1e15 \
-#                    -v \
-#                    -o $OUTDIR/$FTAG/samples \
-#                    -t pc2-$FTAG-draw-$I \
-#                    --grid \
-#                    $sample $reference \
-#                || exit 1
+                #------------
+
+                # draw from GP model and integrate to get pressure - energy_density - baryon_density curves
 
 #                echo \
-#                plot-eos \
-#                    energy_densityc2 cs2c2 \
-#                    --logcolumn energy_densityc2 --logcolumn cs2c2 \
-#                    --column-label energy_densityc2 '$\varepsilon/c^2$' \
-#                    --column-label cs2c2 '$c_s^2/c^2$' \
-#                    --column-range energy_densityc2 2e13 1e15 \
-#                    --column-range cs2c2 0.002 1.0 \
-#                    -v \
-#                    -o $OUTDIR/$FTAG/samples \
-#                    -t cs2c2-$FTAG-draw-$I \
-#                    --grid \
-#                    $sample $reference \
-#                || exit 1
+                ./gp2eos \
+                    $NEWPROC \
+                    $EFTCSV \
+                    --reference-pressurec2 "1.0e9" \
+                    --reference-pressurec2 "3.0e9" \
+                    --reference-pressurec2 "6.0e9" \
+                    --reference-pressurec2 "1.0e10" \
+                    --reference-pressurec2 "3.0e10" \
+                    --reference-pressurec2 "6.0e10" \
+                    --reference-pressurec2 "1.0e11" \
+                    --reference-pressurec2 "2.0e11" \
+                    --reference-pressurec2 "3.0e11" \
+                    --reference-pressurec2 "4.0e11" \
+                    --reference-pressurec2 "5.0e11" \
+                    --reference-pressurec2 "6.0e11" \
+                    --reference-pressurec2 "7.0e11" \
+                    --reference-pressurec2 "8.0e11" \
+                    --reference-pressurec2 "9.0e11" \
+                    --reference-pressurec2 "1.0e12" \
+                    --reference-pressurec2 "2.0e12" \
+                    --reference-pressurec2 "3.0e12" \
+                    --reference-pressurec2 "4.0e12" \
+                    --reference-pressurec2 "5.0e12" \
+                    --reference-pressurec2 "6.0e12" \
+                    --reference-pressurec2 "7.0e12" \
+                    --reference-pressurec2 "8.0e12" \
+                    --reference-pressurec2 "9.0e12" \
+                    --reference-pressurec2 "1.0e13" \
+                    --reference-pressurec2 "1.5e13" \
+                    --reference-pressurec2 "2.0e13" \
+                    --reference-pressurec2 "2.5e13" \
+                    --reference-pressurec2 "3.0e13" \
+                    --num-draws $NUM_EOS_FOR_DISTRIBUTIONS \
+                    --plot \
+                    --output-dir $OUTDIR/$FTAG \
+                    --tag $FTAG \
+                    --verbose \
+                || exit 1
 
-                samples="$samples $sample"
-                macsamples="$macsamples -s $I $macpath --samples-alpha $I 0.25 --samples-color $I k"
+                #---------------------------------
 
-                echo $i >> $MANIFEST ### add this EoS realization to manifest
+                ### draw from resulting GP
+
+#                echo \
+                draw-gpr \
+                    -v \
+                    -n $NUM_EOS_SAMPLES \
+                    --plot \
+                    --output-dir $OUTDIR/$FTAG \
+                    --tag $FTAG \
+                    $NEWPROC \
+                || exit 1
+
+                MANIFEST="${OUTDIR}/$FTAG/manifest-${FTAG}.csv"
+                echo $EOS_COLUMN > $MANIFEST
+
+                ### integrate the samples
+
+                reference=""
+                for eos in "${OUTDIR}/${EFT}.csv" "${OUTDIR}/${EFT}_minimum.csv" "${OUTDIR}/${EFT}_maximum.csv"
+                do
+                    name=$(echo $eos | awk -F '/' '{print $2}' | awk -F '.csv' '{print $1}')
+                    reference="$reference -s $name $eos --samples-alpha $name 0.50 --samples-color $name b"
+                done
+
+                reference="$reference -s crust $CRUST --samples-alpha crust 0.50 --samples-color crust r"
+
+                samples=""    # used to record options for plotting later
+                macsamples=""
+
+                for i in $(seq 0 $(($NUM_EOS_SAMPLES-1)))
+                do
+
+                    I=$(python -c "print('%06d'%$i)")
+                    M=$(python -c "print('%06d'%($i//1000))")
+                    phipath="${OUTDIR}/${FTAG}/DRAWmod1000-$M/draw-gpr_${FTAG}-${I}.csv"
+                    outpath="${OUTDIR}/${FTAG}/DRAWmod1000-$M/eos-draw-${I}.csv"
+                    macpath="${OUTDIR}/${FTAG}/DRAWmod1000-$M/macro-draw-${I}.csv"
+
+#                    echo \
+                    integrate-phi \
+                        -v \
+                        -o $outpath \
+                        --sigma-logpressurec2 0.0 \
+                        --stitch-below-reference-pressure \
+                        --crust $CRUST \
+                        --include-cs2c2 \
+                        $phipath $REFERENCE_PRESSUREC2 \
+                    || exit 1
+
+                    sample="-s $I $outpath --samples-alpha $I 0.25 --samples-color $I k"
+
+                    # plot this realization individually
+#                    echo \
+#                    plot-eos \
+#                        energy_densityc2 pressurec2 \
+#                        --logcolumn energy_densityc2 --logcolumn pressurec2 \
+#                        --column-label energy_densityc2 '$\varepsilon/c^2$' \
+#                        --column-label pressurec2 '$p/c^2$' \
+#                        --column-range energy_densityc2 2e13 1e15 \
+#                        --column-range pressurec2 3e10 1e15 \
+#                        -v \
+#                        -o $OUTDIR/$FTAG/samples \
+#                        -t pc2-$FTAG-draw-$I \
+#                        --grid \
+#                        $sample $reference \
+#                    || exit 1
+
+#                    echo \
+#                    plot-eos \
+#                        energy_densityc2 cs2c2 \
+#                        --logcolumn energy_densityc2 --logcolumn cs2c2 \
+#                        --column-label energy_densityc2 '$\varepsilon/c^2$' \
+#                        --column-label cs2c2 '$c_s^2/c^2$' \
+#                        --column-range energy_densityc2 2e13 1e15 \
+#                        --column-range cs2c2 0.002 1.0 \
+#                        -v \
+#                        -o $OUTDIR/$FTAG/samples \
+#                        -t cs2c2-$FTAG-draw-$I \
+#                        --grid \
+#                        $sample $reference \
+#                    || exit 1
+
+                    samples="$samples $sample"
+                    macsamples="$macsamples -s $I $macpath --samples-alpha $I 0.25 --samples-color $I k"
+
+                    echo $i >> $MANIFEST ### add this EoS realization to manifest
+
+                done
+
+                #---------------------------------
+
+                ### plot synthetic EoS
+
+#                echo \
+                plot-eos \
+                    energy_densityc2 pressurec2 \
+                    --logcolumn energy_densityc2 --logcolumn pressurec2 \
+                    --column-label energy_densityc2 '$\varepsilon/c^2$' \
+                    --column-label pressurec2 '$p/c^2$' \
+                    --column-range energy_densityc2 1e13 1e16 \
+                    --column-range pressurec2 1e10 1e16 \
+                    -v \
+                    -o $OUTDIR/$FTAG \
+                    -t pc2-$FTAG \
+                    --grid \
+                    $samples $reference \
+                || exit 1
+
+#                echo \
+                plot-eos \
+                    energy_densityc2 cs2c2 \
+                    --logcolumn energy_densityc2 --logcolumn cs2c2 \
+                    --column-label energy_densityc2 '$\varepsilon/c^2$' \
+                    --column-label cs2c2 '$c_s^2/c^2$' \
+                    --column-range energy_densityc2 1e13 1e16 \
+                    --column-range cs2c2 0.001 1.0 \
+                    -v \
+                    -o $OUTDIR/$FTAG \
+                    -t cs2c2-$FTAG \
+                    --grid \
+                    $samples $reference \
+                || exit 1
+
+                #-------------------------------------
+
+                # integrate the TOV equations
+
+#                echo \
+                process2tov \
+                    $MANIFEST \
+                    "1e11" "1e17" \
+                    --pressurec2-column "pressurec2" \
+                    --energy_densityc2-column "energy_densityc2" \
+                    --baryon_density-column "baryon_density" \
+                    --cs2c2-column "cs2c2" \
+                    --central-baryon-density-range "1e13" "1.4e16" \
+                    --central-eos-column "pressurec2" \
+                    --central-eos-column "energy_densityc2" \
+                    --central-eos-column "baryon_density" \
+                    --central-eos-column "cs2c2" \
+                    --formalism "logenthalpy" \
+                    --min-num-models "50" \
+                    --interpolator-rtol "1e-2" \
+                    --integration-rtol "1e-4" \
+                    --eos-column $EOS_COLUMN \
+                    --eos-dir ${OUTDIR}/${FTAG} \
+                    --eos-num-per-dir "1000" \
+                    --eos-basename "eos-draw-%(draw)06d.csv" \
+                    --macro-basename "macro-draw-%(draw)06d.csv" \
+                    --Verbose \
+                || exit 1
+
+                # now plot the resulting EoS
+
+#                echo \
+                plot-eos \
+                    R M \
+                    --column-label R '$R\,[\mathrm{km}]$' \
+                    --column-label M '$M\,[M_\odot]$' \
+                    --column-range R 5.0 20 \
+                    --column-range M 0.1 3.0 \
+                    -v \
+                    -o $OUTDIR/$FTAG \
+                    -t M-R-$FTAG \
+                    --grid \
+                    $macsamples \
+                || exit 1
+
+#                echo \
+                plot-eos \
+                    M Lambda \
+                    --logcolumn Lambda \
+                    --column-label Lambda '$\Lambda$' \
+                    --column-label M '$M\,[M_\odot]$' \
+                    --column-range Lambda 1.0 10000 \
+                    --column-range M 0.1 3.0 \
+                    -v \
+                    -o $OUTDIR/$FTAG \
+                    -t M-Lambda-$FTAG \
+                    --grid \
+                    $macsamples \
+                || exit 1
 
             done
-
-            #-------------------------------------
-
-            ### plot synthetic EoS
-
-#            echo \
-            plot-eos \
-                energy_densityc2 pressurec2 \
-                --logcolumn energy_densityc2 --logcolumn pressurec2 \
-                --column-label energy_densityc2 '$\varepsilon/c^2$' \
-                --column-label pressurec2 '$p/c^2$' \
-                --column-range energy_densityc2 1e13 1e16 \
-                --column-range pressurec2 1e10 1e16 \
-                -v \
-                -o $OUTDIR/$FTAG \
-                -t pc2-$FTAG \
-                --grid \
-                $samples $reference \
-            || exit 1
-
-#            echo \
-            plot-eos \
-                energy_densityc2 cs2c2 \
-                --logcolumn energy_densityc2 --logcolumn cs2c2 \
-                --column-label energy_densityc2 '$\varepsilon/c^2$' \
-                --column-label cs2c2 '$c_s^2/c^2$' \
-                --column-range energy_densityc2 1e13 1e16 \
-                --column-range cs2c2 0.001 1.0 \
-                -v \
-                -o $OUTDIR/$FTAG \
-                -t cs2c2-$FTAG \
-                --grid \
-                $samples $reference \
-            || exit 1
-
-            #-------------------------------------
-
-            # integrate the TOV equations
-
-#            echo \
-            process2tov \
-                $MANIFEST \
-                "1e11" "1e17" \
-                --pressurec2-column "pressurec2" \
-                --energy_densityc2-column "energy_densityc2" \
-                --baryon_density-column "baryon_density" \
-                --cs2c2-column "cs2c2" \
-                --central-baryon-density-range "1e13" "1.4e16" \
-                --central-eos-column "pressurec2" \
-                --central-eos-column "energy_densityc2" \
-                --central-eos-column "baryon_density" \
-                --central-eos-column "cs2c2" \
-                --formalism "logenthalpy" \
-                --min-num-models "50" \
-                --interpolator-rtol "1e-2" \
-                --integration-rtol "1e-4" \
-                --eos-column $EOS_COLUMN \
-                --eos-dir ${OUTDIR}/${FTAG} \
-                --eos-num-per-dir "1000" \
-                --eos-basename "eos-draw-%(draw)06d.csv" \
-                --macro-basename "macro-draw-%(draw)06d.csv" \
-                --Verbose \
-            || exit 1
-
-            # now plot the resulting EoS
-
-#            echo \
-            plot-eos \
-                R M \
-                --column-label R '$R\,[\mathrm{km}]$' \
-                --column-label M '$M\,[M_\odot]$' \
-                --column-range R 5.0 20 \
-                --column-range M 0.1 3.0 \
-                -v \
-                -o $OUTDIR/$FTAG \
-                -t M-R-$FTAG \
-                --grid \
-                $macsamples \
-            || exit 1
-
-#            echo \
-            plot-eos \
-                M Lambda \
-                --logcolumn Lambda \
-                --column-label Lambda '$\Lambda$' \
-                --column-label M '$M\,[M_\odot]$' \
-                --column-range Lambda 1.0 10000 \
-                --column-range M 0.1 3.0 \
-                -v \
-                -o $OUTDIR/$FTAG \
-                -t M-Lambda-$FTAG \
-                --grid \
-                $macsamples \
-            || exit 1
-
         done
     done
 done
