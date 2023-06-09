@@ -239,14 +239,14 @@ for csv in args.csv:
 
         # squeeze the uncertainty in the EFT bands at low densities so they will closely follow the crust
 
-        logpc2_squeeze = np.log(args.stitch_condition_squeeze_pressurec2)
-
-        scaling = np.where(
-            logpc2_test <= logpc2_squeeze,
-            (logpc2_test/logpc2_squeeze)**(args.stitch_condition_squeeze_pow/2),
-            1.0,
-        )
-        cov *= np.outer(scaling, scaling)
+#        logpc2_squeeze = np.log(args.stitch_condition_squeeze_pressurec2)
+#
+#        scaling = np.where(
+#            logpc2_test <= logpc2_squeeze,
+#            (logpc2_test/logpc2_squeeze)**(args.stitch_condition_squeeze_pow/2),
+#            1.0,
+#        )
+#        cov *= np.outer(scaling, scaling)
 
         # now condition the process
         phi_mean = phi_test \
