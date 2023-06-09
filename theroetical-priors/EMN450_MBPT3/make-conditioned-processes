@@ -98,8 +98,8 @@ REFERENCE_PRESSUREC2="1e11" # we're likely to switch to the crust at or above p/
 
 EFTS=""
 
-EFTS="$EFTS EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands"
-#EFTS="$EFTS EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands"
+#EFTS="$EFTS EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands"
+EFTS="$EFTS EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands"
 
 #------------------------
 
@@ -137,11 +137,11 @@ declare -A STITCH_ARGS
 STITCH_LOGIC="$STITCH_LOGIC switch"
 STITCH_ARGS["switch"]="--stitch-logic switch --stitch-switch-delta-logpc2 2.0 --stitch-switch-pow 1.0"
 
-#STITCH_LOGIC="$STITCH_LOGIC trunc+cond"
-#STITCH_ARGS["trunc+cond"]="--stitch-logic condition --crust-max-baryon-density 7.3e13" # --stitch-condition-sigma 1e-3 --stitch-condition-squeeze-pressurec2 2e11 --stitch-condition-squeeze-pow 1.0"
+STITCH_LOGIC="$STITCH_LOGIC trunc+cond"
+STITCH_ARGS["trunc+cond"]="--stitch-logic condition --crust-max-baryon-density 7.3e13 --stitch-condition-sigma 1e-2 --stitch-condition-pow 1.0" # --stitch-condition-squeeze-pressurec2 2e11 --stitch-condition-squeeze-pow 1.0"
 
-#STITCH_LOGIC="$STITCH_LOGIC cond"
-#STITCH_ARGS["cond"]="--stitch-logic condition --stitch-condition-sigma 1e-2" # --stitch-condition-squeeze-pressurec2 2e11 --stitch-condition-squeeze-pow 1.0"
+STITCH_LOGIC="$STITCH_LOGIC cond"
+STITCH_ARGS["cond"]="--stitch-logic condition --stitch-condition-sigma 1e-2 --stitch-condition-pow 0.0" # --stitch-condition-squeeze-pressurec2 2e11 --stitch-condition-squeeze-pow 1.0"
 
 #-------------------------------------------------
 
@@ -152,7 +152,7 @@ EOS_COLUMN="eos"
 for EFT in $EFTS
 do
 
-    OUTDIR="2023-06-09-${EFT}"
+    OUTDIR="TEST-2023-06-09-${EFT}"
 
     # convert to csv and CGS units
 
@@ -186,6 +186,7 @@ do
                 --num-pressure-points $NUM_GRID_PC2 \
                 --scale $SCALE \
                 --correlation-length $LENGTH \
+                --min-stdv "5e-2" \
                 --crust $CRUST \
                 ${STITCH_ARGS[$LOGIC]} \
                 --plot \
