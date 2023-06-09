@@ -137,11 +137,11 @@ declare -A STITCH_ARGS
 STITCH_LOGIC="$STITCH_LOGIC switch"
 STITCH_ARGS["switch"]="--stitch-logic switch --stitch-switch-delta-logpc2 2.0 --stitch-switch-pow 1.0"
 
-STITCH_LOGIC="$STITCH_LOGIC trunc+cond"
-STITCH_ARGS["trunc+cond"]="--stitch-logic condition --crust-max-baryon-density 7.3e13 --stitch-condition-sigma 1e-2 --stitch-condition-pow 1.0" # --stitch-condition-squeeze-pressurec2 2e11 --stitch-condition-squeeze-pow 1.0"
-
 STITCH_LOGIC="$STITCH_LOGIC cond"
-STITCH_ARGS["cond"]="--stitch-logic condition --stitch-condition-sigma 1e-2 --stitch-condition-pow 0.0" # --stitch-condition-squeeze-pressurec2 2e11 --stitch-condition-squeeze-pow 1.0"
+STITCH_ARGS["cond"]="--stitch-logic condition --stitch-condition-sigma 1e-1 --stitch-condition-pow 3.0"
+
+STITCH_LOGIC="$STITCH_LOGIC trunc+cond"
+STITCH_ARGS["trunc+cond"]="${STITCH_ARGS[cond]} --crust-max-baryon-density 7.3e13"
 
 #-------------------------------------------------
 
