@@ -70,7 +70,7 @@ There is an additional step that actually stitches the GP realization to a crust
 The following examples show the impact of stitching choices on the distribution of macroscopic properties of NSs.
 
 I show the results for the N3LO EFT data with `s=0.75`, `l=1.00`, and extensions to higher densities loosely based on hadronic EoS.
-These models trust the EFT calculation up to `~1.5*nsat` (`p/c2 = 1e13 g/cm^3`).
+These models trust the N3LO EFT calculation up to `~1.5*nsat` (`p/c2 = 1e13 g/cm^3`).
 
 |                      |switching to crust near `0.25*nsat`|conditioning on crust up to `0.25*nsat`|conditioning on crust up to `0.50*nsat`|
 |----------------------|-----------------------------------|---------------------------------------|---------------------------------------|
@@ -95,7 +95,7 @@ Nonetheless, the impact of these choices on the M-R curves appears to be relativ
 The following examples show the impact of wiggles in `cs2c2` within the EFT band. As described at length in, e.g., [arXiv:2004.07232](https://arxiv.org/abs/2004.07232), we expect the uncertainty in the EFT calculation to be correlated across densities. However, the bands from [arXiv:2204.14016](https://arxiv.org/abs/2204.14016) do not account for any such correlation. We investigate whether the presence of wiggles in the sound speed (that are still bounded within the EFT band) have a significant impact on macroscopic properties of NSs. See also discussion in [arXiv:2305.07411](https://arxiv.org/abs/2305.07411) and references therein.
 
 Below, I show the results of the "switch" stitching to the crust and extensions to higher densities loosely based on hadronic EoS.
-These models trust the EFT calculation up to `~1.5*nsat` (`p/c2 = 1e13 g/cm^3`).
+These models trust the N3LO EFT calculation up to `~1.5*nsat` (`p/c2 = 1e13 g/cm^3`).
 
 |                      |many wiggles: `s=1.00` & `l=0.25`|some wiggles: `s=0.75` & `l=1.00`|no wiggles: `s=0.75` & `l=4.00`|
 |----------------------|---------------------------------|---------------------------------|-------------------------------|
@@ -120,7 +120,7 @@ This behavior can be understood as an averaging process. If we consider a model 
 Finally, we compare the uncertainty in macroscopic properties of NSs with conditioned on different orders in the EFT calculation at low densities.
 
 I show the results of the "switch" stitching to the crust, some wiggles (`s=0.75` & `l=1.00`), and extensions to higher densities loosely based on hadronic EoS.
-These models trust the EFT calculation up to `~1.5*nsat` (`p/c2 = 1e13 g/cm^3`).
+These models trust the each EFT calculation up to `~1.5*nsat` (`p/c2 = 1e13 g/cm^3`).
 
 |                      |N2LO|N3LO|
 |----------------------|----|----|
@@ -135,3 +135,5 @@ These models trust the EFT calculation up to `~1.5*nsat` (`p/c2 = 1e13 g/cm^3`).
 As expected, the higher-order calculation has a smaller uncertainty in the sound-speed within the EFT band. This translates to a smaller uncertainty in pressure vs. density and a smaller spread in mass vs radius.
 
 *However*, the extension to high densities can still probe roughly equivalent parts of the mass-radius plane. It would likely take many more draws from these prior processes to confidently distinguish between them at high densities. [arXiv:2004.07744](https://arxiv.org/abs/2004.07744) suggests that tighter constraints at low densities may translate into tighter constraints at high densities, but the improvements in the constraints at low densities between the N2LO and N3LO calculations may be too small to become immediately apparent. We may also need to include astrophysical data before these differences appear.
+
+It does appear that our stitching logic produces slightly wider uncertainties at the lowest densities for N2LO compared to N3LO. This will naturally manifest in the pressure vs density and mass vs radius planes. However, given that we see very little impact from the precise way the N3LO bands are stitched to the crust, the additional uncertainty in the N2LO process is probably not only due to this additional uncertainty at very low densities. The extra spread between `0.5*nsat` to `1.5*nsat` likely dominates.
