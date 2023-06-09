@@ -8,8 +8,6 @@ Specifically, we test the following
     - N2LO vs N3LO, with estimates of uncertainty based on the maximum difference observed between consecutive orders
     - the regulator scheme and the cut-off momentum are kept fixed
  
-[[_TOC_]]
-
 --------------------------------------------------
 
 ## Construction of Gaussian process extensions
@@ -78,6 +76,12 @@ These models trust the EFT calculation up to `~1.5*nsat` (`p/c2 = 1e13 g/cm^3`).
 
 ### Observations
 
+Conditioning the GP model of the EFT band on the crust can lead to some unwanted features. For example, there appear to be issues with numerical stability of the inversion (the mean process deviates wildly) and the relatively long correlation lengths assumed within the EFT band can mean that the resulting process "misses" the EFT band over a large pressure range.
+
+On the other hand, "switching" to the crust appears to produce a much more controled transition that consistently follows the EFT band over the entire range of pressures considered.
+
+Nonetheless, the impact of these choices on the M-R curves appears to be relatively small, unless the conditiond mean does something really wacky.
+
 --------------------------------------------------
 
 ## Impact of "wiggles" within EFT band
@@ -108,10 +112,10 @@ These models trust the EFT calculation up to `~1.5*nsat` (`p/c2 = 1e13 g/cm^3`).
 
 |                      |N2LO|N3LO|
 |----------------------|----|----|
-|GP construction       |<img src="">|<img src="">|
-|ext. to high density  |<img src="">|<img src="">|
-|sound-speed vs density|<img src="">|<img src="">|
-|pressure vs density   |<img src="">|<img src="">|
-|mass vs radius        |<img src="">
+|GP construction       |<img src="2023-06-09-EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13.png">|<img src="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13.png">|
+|ext. to high density  |<img src="2023-06-09-EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010/gpr-fix-marginal_EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010.png">|<img src="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010/gpr-fix-marginal_EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010.png">|
+|sound-speed vs density|<img src="2023-06-09-EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010/plot-eos_cs2c2-EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010.png">|<img src="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010/plot-eos_cs2c2-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010.png">|
+|pressure vs density   |<img src="2023-06-09-EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010/plot-eos_pc2-EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010.png">|<img src="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010/plot-eos_pc2-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010.png">|
+|mass vs radius        |<img src="">|<img src="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010/plot-eos_M-R-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010.png">|
 
 ### Observations
