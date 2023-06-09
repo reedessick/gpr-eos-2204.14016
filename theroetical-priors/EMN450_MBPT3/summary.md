@@ -67,10 +67,11 @@ These models trust the EFT calculation up to `~1.5*nsat` (`p/c2 = 1e13 g/cm^3`).
 
 |                      |switching to crust near `0.25*nsat`|conditioning on crust up to `0.25*nsat`|conditioning on crust up to `0.50*nsat`|
 |----------------------|-----------------------------------|---------------------------------------|---------------------------------------|
-|GP construction       |<img src="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13.png">|
-|sound-speed vs density|
-|pressure vs density   |
-|mass vs radius        |
+|EFT GP construction   |<img src="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13.png">|
+|ext. to high density  |<img src="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010/gpr-fix-marginal_EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010.png">|
+|sound-speed vs density|<img src="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010/plot-eos_cs2c2-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010.png">|
+|pressure vs density   |<img src="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010/plot-eos_pc2-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010.png">|
+|mass vs radius        |<img src="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010/plot-eos_M-R-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010.png">|
 
 --------------------------------------------------
 
