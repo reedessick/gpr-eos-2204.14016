@@ -40,6 +40,9 @@ parser.add_argument('--crust', type=str, required=True,
 parser.add_argument('--crust-min-baryon-density', default=2.8e12, type=float,
     help='ignore the crust below this baryon density (specified in CGS). \
 DEFAULT is 0.01 * saturation (2.8e12)')
+parser.add_argument('--crust-max-baryon-density', default=np.infty, type=float,
+    help='ignore the crust above this baryon density (sepcified in CGS). \
+DEFAULT is to include the crust up to as high as it goes')
 
 parser.add_argument('--stitch-logic', default='switch', type=str,
     help='control the logic for how we stitch to the crust. Default is to "switch" to the crust when the \
@@ -53,8 +56,6 @@ parser.add_argument('--stitch-switch-pow', default=1.0, type=float,
 
 parser.add_argument('--stitch-condition-sigma', default=1e-4, type=float,
     help='the white noise marginal variance used to model uncertainty in the crust')
-parser.add_argument('--stitch-condition-correlation-length', default=0.25, type=float,
-    help='the correlation length used when computing the correlations between crust and the EFT band')
 parser.add_argument('--stitch-condition-squeeze-pressurec2', default=2e11, type=float,
     help='controls how quickly we squash uncertainty around the crust near the stitching density')
 parser.add_argument('--stitch-condition-squeeze-pow', default=1.0, type=float,
@@ -96,7 +97,7 @@ crust = np.genfromtxt(args.crust, names=True, delimiter=',')
 
 baryon_density_crust = crust['baryon_density']
 
-sel = baryon_density_crust >= args.crust_min_baryon_density
+sel = (baryon_density_crust >= args.crust_min_baryon_density) * (baryon_density_crust <= args.crust_max_baryon_density)
 
 phi_crust = np.log(1./crust['cs2c2'][sel] - 1)
 logpc2_crust = np.log(crust['pressurec2'][sel])
@@ -227,14 +228,14 @@ for csv in args.csv:
 
         # covariance between crust points
         cov_crust_crust = np.outer(stdv_crust, stdv_crust)
-        cov_crust_crust *= np.exp(-(np.outer(logpc2_crust, ones_crust) - np.outer(ones_crust, logpc2_crust))**2 / args.stitch_condition_correlation_length**2)
+        cov_crust_crust *= np.exp(-(np.outer(logpc2_crust, ones_crust) - np.outer(ones_crust, logpc2_crust))**2 / args.correlation_length**2)
         cov_crust_crust += np.diag(ones_crust * args.stitch_condition_sigma**2)
 
         inv_cov_crust_crust = np.linalg.pinv(cov_crust_crust) # invert this only once
 
         # covariance between crust and test points
         cov_test_crust = np.outer(stdv, stdv_crust)
-        cov_test_crust *= np.exp(-(np.outer(logpc2_test, ones_crust) - np.outer(ones, logpc2_crust))**2 / args.stitch_condition_correlation_length**2)
+        cov_test_crust *= np.exp(-(np.outer(logpc2_test, ones_crust) - np.outer(ones, logpc2_crust))**2 / args.correlation_length**2)
 
         # squeeze the uncertainty in the EFT bands at low densities so they will closely follow the crust
 

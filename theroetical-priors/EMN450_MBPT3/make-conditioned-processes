@@ -91,13 +91,14 @@ NUM_EOS_SAMPLES=50           ### for actual realizations (via draw-gpr)
 
 CRUST="../processes_from_literature/ingo-bps-with-cs2c2.csv"
 
-REFERENCE_PRESSUREC2="3e10"
+#REFERENCE_PRESSUREC2="3e10"
+REFERENCE_PRESSUREC2="1e11" # we're likely to switch to the crust at or above p/c2 ~ 2.7e11 g/cm^3 anyway
 
 #------------------------
 
 EFTS=""
 
-EFTS="$EFTS EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands"
+#EFTS="$EFTS EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands"
 EFTS="$EFTS EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands"
 
 #------------------------
@@ -107,12 +108,12 @@ MAXPC2S=""
 #MAXPC2S="$MAXPC2S 2e10"
 #MAXPC2S="$MAXPC2S 4e10"
 #MAXPC2S="$MAXPC2S 8e10"
-#MAXPC2S="$MAXPC2S 1e11"
+MAXPC2S="$MAXPC2S 1e11"
 
-#MAXPC2S="$MAXPC2S 2e11" ### we switch to the crust at p/c2 ~ 2.7e11 g/cm^3
+#MAXPC2S="$MAXPC2S 2e11" ### we switch to the crust at or above p/c2 ~ 2.7e11 g/cm^3
 #MAXPC2S="$MAXPC2S 4e11"
 #MAXPC2S="$MAXPC2S 8e11"
-MAXPC2S="$MAXPC2S 1e12"
+MAXPC2S="$MAXPC2S 1e12" ### my --stitch-logic=condition runs fail here because of a bad covariance matrix...
 #MAXPC2S="$MAXPC2S 2e12"
 #MAXPC2S="$MAXPC2S 4e12"
 #MAXPC2S="$MAXPC2S 8e12"
@@ -124,8 +125,8 @@ COMPDIR="../processes_from_literature"
 
 COMPS=""
 
-COMPS="$COMPS hadagn"
-COMPS="$COMPS hypagn"
+#COMPS="$COMPS hadagn"
+#COMPS="$COMPS hypagn"
 COMPS="$COMPS qrkagn"
 
 #------------------------
@@ -133,11 +134,14 @@ COMPS="$COMPS qrkagn"
 STITCH_LOGIC=""
 declare -A STITCH_ARGS
 
-STITCH_LOGIC="$STITCH_LOGIC switch"
-STITCH_ARGS["switch"]="--stitch-switch-delta-logpc2 2.0 --stitch-switch-pow 1.0"
+#STITCH_LOGIC="$STITCH_LOGIC switch"
+#STITCH_ARGS["switch"]="--stitch-logic switch --stitch-switch-delta-logpc2 2.0 --stitch-switch-pow 1.0"
+
+STITCH_LOGIC="$STITCH_LOGIC trunc+cond"
+STITCH_ARGS["trunc+cond"]="--stitch-logic condition --crust-max-baryon-density 7.3e13 --stitch-condition-sigma 1e-2 --stitch-condition-squeeze-pressurec2 2e11 --stitch-condition-squeeze-pow 1.0"
 
 STITCH_LOGIC="$STITCH_LOGIC condition"
-STITCH_ARGS["condition"]="--stitch-condition-sigma 1e-2 --stitch-condition-correlation-length 0.25 --stitch-condition-squeeze-pressurec2 2e11 --stitch-condition-squeeze-pow 3.0"
+STITCH_ARGS["cond"]="--stitch-logic condition --stitch-condition-sigma 1e-2 --stitch-condition-squeeze-pressurec2 2e11 --stitch-condition-squeeze-pow 1.0"
 
 #-------------------------------------------------
 
@@ -148,7 +152,7 @@ EOS_COLUMN="eos"
 for EFT in $EFTS
 do
 
-    OUTDIR="2023-06-08-${EFT}"
+    OUTDIR="2023-06-09-${EFT}"
 
     # convert to csv and CGS units
 
@@ -183,7 +187,6 @@ do
                 --scale $SCALE \
                 --correlation-length $LENGTH \
                 --crust $CRUST \
-                --stitch-logic $LOGIC \
                 ${STITCH_ARGS[$LOGIC]} \
                 --plot \
                 --num-draws 25 \
