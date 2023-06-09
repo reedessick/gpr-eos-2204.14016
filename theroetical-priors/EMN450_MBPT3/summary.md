@@ -126,4 +126,6 @@ These models trust the EFT calculation up to `~1.5*nsat` (`p/c2 = 1e13 g/cm^3`).
 
 ### Observations
 
+As expected, the higher-order calculation has a smaller uncertainty in the sound-speed within the EFT band. This translates to a smaller uncertainty in pressure vs. density and a smaller spread in mass vs radius.
 
+*However*, the extension to high densities can still probe roughly equivalent parts of the mass-radius plane. It would likely take many more draws from these prior processes to confidently distinguish between them at high densities. [arXiv:2004.07744](https://arxiv.org/abs/2004.07744) suggests that tighter constraints at low densities may translate into tighter constraints at high densities, but the improvements in the constraints at low densities between the N2LO and N3LO calculations may be too small to become immediately apparent. We may also need to include astrophysical data before these differences appear.
