@@ -8,6 +8,8 @@ Specifically, we test the following
     - N2LO vs N3LO, with estimates of uncertainty based on the maximum difference observed between consecutive orders
     - the regulator scheme and the cut-off momentum are kept fixed
  
+[[_TOC_]]
+
 --------------------------------------------------
 
 ## Construction of Gaussian process extensions
@@ -74,6 +76,8 @@ These models trust the EFT calculation up to `~1.5*nsat` (`p/c2 = 1e13 g/cm^3`).
 |pressure vs density   |<img src="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010/plot-eos_pc2-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010.png">|<img src="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010/plot-eos_pc2-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010.png">|<img src="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_cond_maxpc2-1e13_hadagn_05d000_00d010/plot-eos_pc2-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_cond_maxpc2-1e13_hadagn_05d000_00d010.png">|
 |mass vs radius        |<img src="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010/plot-eos_M-R-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010.png">|<img src="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010/plot-eos_M-R-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010.png">|<img src="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_cond_maxpc2-1e13_hadagn_05d000_00d010/plot-eos_M-R-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_cond_maxpc2-1e13_hadagn_05d000_00d010.png">|
 
+### Observations
+
 --------------------------------------------------
 
 ## Impact of "wiggles" within EFT band
@@ -90,6 +94,8 @@ These models trust the EFT calculation up to `~1.5*nsat` (`p/c2 = 1e13 g/cm^3`).
 |sound-speed vs density|<img src="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_01d00_000d250_switch_maxpc2-1e13_hadagn_05d000_00d010/plot-eos_cs2c2-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_01d00_000d250_switch_maxpc2-1e13_hadagn_05d000_00d010.png">|<img src="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010/plot-eos_cs2c2-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010.png">|<img src="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_004d000_switch_maxpc2-1e13_hadagn_05d000_00d010/plot-eos_cs2c2-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_004d000_switch_maxpc2-1e13_hadagn_05d000_00d010.png">|
 |pressure vs density   |<img src="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_01d00_000d250_switch_maxpc2-1e13_hadagn_05d000_00d010/plot-eos_pc2-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_01d00_000d250_switch_maxpc2-1e13_hadagn_05d000_00d010.png">|<img src="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010/plot-eos_pc2-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010.png">|<img src="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_004d000_switch_maxpc2-1e13_hadagn_05d000_00d010/plot-eos_pc2-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_004d000_switch_maxpc2-1e13_hadagn_05d000_00d010.png">|
 |mass vs radius        |<img src="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_01d00_000d250_switch_maxpc2-1e13_hadagn_05d000_00d010/plot-eos_M-R-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_01d00_000d250_switch_maxpc2-1e13_hadagn_05d000_00d010.png">|<img src="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010/plot-eos_M-R-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13_hadagn_05d000_00d010.png">|<img src="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_004d000_switch_maxpc2-1e13_hadagn_05d000_00d010/plot-eos_M-R-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_004d000_switch_maxpc2-1e13_hadagn_05d000_00d010.png">|
+
+### Observations
 
 --------------------------------------------------
 
@@ -108,3 +114,4 @@ These models trust the EFT calculation up to `~1.5*nsat` (`p/c2 = 1e13 g/cm^3`).
 |pressure vs density   |<img src="">|<img src="">|
 |mass vs radius        |<img src="">
 
+### Observations
