@@ -14,12 +14,14 @@ Specifically, we test the following
 
 ## Construction of Gaussian process extensions
 
-### read in tabular data
+We construct extended models of the EFT predictions with the following procedure.
+
+### 1) read in tabular data
 
 First, we numerically estimate `cs2c2` from `pressurece2` and `energy_densityc2` and then compute `phi` as a function of `log(pressurec2)`.
 This is done for the mean, min, and max estimates from the EFT calculation.
 
-### construct GP model for the EFT band
+### 2) construct GP model for the EFT band
 
 We construct a GP for `phi(log(pressurec2))` with
 
@@ -35,7 +37,7 @@ where `sigma(x_i)` is set by the observed spread in the tabular data at `x_i`. T
   * `s` : an overall scale to control how much variance there is
   * `l` : a correlation length determining how much the curves can wiggle within this band
 
-### stitch the GP model for the EFT band to the crust
+### 3) stitch the GP model for the EFT band to the crust
 
 We implement two methods to stitch the EFT band to the crust
 
@@ -50,7 +52,7 @@ We implement two methods to stitch the EFT band to the crust
     - there are several free parameters in this procedure
       * `sigma_crust` : the size of a the standard deviation for a white-noise kernel that is added to the crust
 
-### condition an agnostic extension to match the EFT+crust process
+### 4) condition an agnostic extension to match the EFT+crust process
 
 We follow the process described [here](https://github.com/reedessick/universality/blob/master/notes/fix-marginal.pdf).
 Within this procedure, we use a relatively long "smoothing length" (`5.0`) and a small "smoothing sigma" (0.01).
