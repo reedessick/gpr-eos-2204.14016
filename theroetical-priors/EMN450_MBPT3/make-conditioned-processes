@@ -108,12 +108,12 @@ MAXPC2S=""
 #MAXPC2S="$MAXPC2S 2e10"
 #MAXPC2S="$MAXPC2S 4e10"
 #MAXPC2S="$MAXPC2S 8e10"
-MAXPC2S="$MAXPC2S 1e11"
+#MAXPC2S="$MAXPC2S 1e11"
 
 #MAXPC2S="$MAXPC2S 2e11" ### we switch to the crust at or above p/c2 ~ 2.7e11 g/cm^3
 #MAXPC2S="$MAXPC2S 4e11"
 #MAXPC2S="$MAXPC2S 8e11"
-MAXPC2S="$MAXPC2S 1e12" ### my --stitch-logic=condition runs fail here because of a bad covariance matrix...
+#MAXPC2S="$MAXPC2S 1e12" ### my --stitch-logic=condition runs fail here because of a bad covariance matrix...
 #MAXPC2S="$MAXPC2S 2e12"
 #MAXPC2S="$MAXPC2S 4e12"
 #MAXPC2S="$MAXPC2S 8e12"
@@ -125,23 +125,23 @@ COMPDIR="../processes_from_literature"
 
 COMPS=""
 
-#COMPS="$COMPS hadagn"
+COMPS="$COMPS hadagn"
 #COMPS="$COMPS hypagn"
-COMPS="$COMPS qrkagn"
+#COMPS="$COMPS qrkagn"
 
 #------------------------
 
 STITCH_LOGIC=""
 declare -A STITCH_ARGS
 
-#STITCH_LOGIC="$STITCH_LOGIC switch"
-#STITCH_ARGS["switch"]="--stitch-logic switch --stitch-switch-delta-logpc2 2.0 --stitch-switch-pow 1.0"
+STITCH_LOGIC="$STITCH_LOGIC switch"
+STITCH_ARGS["switch"]="--stitch-logic switch --stitch-switch-delta-logpc2 2.0 --stitch-switch-pow 1.0"
 
 STITCH_LOGIC="$STITCH_LOGIC trunc+cond"
-STITCH_ARGS["trunc+cond"]="--stitch-logic condition --crust-max-baryon-density 7.3e13 --stitch-condition-sigma 1e-3 --stitch-condition-squeeze-pressurec2 2e11 --stitch-condition-squeeze-pow 1.0"
+STITCH_ARGS["trunc+cond"]="--stitch-logic condition --crust-max-baryon-density 7.3e13" # --stitch-condition-sigma 1e-3 --stitch-condition-squeeze-pressurec2 2e11 --stitch-condition-squeeze-pow 1.0"
 
-STITCH_LOGIC="$STITCH_LOGIC condition"
-STITCH_ARGS["cond"]="--stitch-logic condition --stitch-condition-sigma 1e-2 --stitch-condition-squeeze-pressurec2 2e11 --stitch-condition-squeeze-pow 1.0"
+STITCH_LOGIC="$STITCH_LOGIC cond"
+STITCH_ARGS["cond"]="--stitch-logic condition --stitch-condition-sigma 1e-2" # --stitch-condition-squeeze-pressurec2 2e11 --stitch-condition-squeeze-pow 1.0"
 
 #-------------------------------------------------
 

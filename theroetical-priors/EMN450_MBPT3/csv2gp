@@ -56,10 +56,10 @@ parser.add_argument('--stitch-switch-pow', default=1.0, type=float,
 
 parser.add_argument('--stitch-condition-sigma', default=1e-4, type=float,
     help='the white noise marginal variance used to model uncertainty in the crust')
-parser.add_argument('--stitch-condition-squeeze-pressurec2', default=2e11, type=float,
-    help='controls how quickly we squash uncertainty around the crust near the stitching density')
-parser.add_argument('--stitch-condition-squeeze-pow', default=1.0, type=float,
-    help='controls how we further squash uncertainty around the crust at the lowest densities')
+#parser.add_argument('--stitch-condition-squeeze-pressurec2', default=2e11, type=float,
+#    help='controls how quickly we squash uncertainty around the crust near the stitching density')
+#parser.add_argument('--stitch-condition-squeeze-pow', default=1.0, type=float,
+#    help='controls how we further squash uncertainty around the crust at the lowest densities')
 
 
 parser.add_argument('--plot', default=False, action='store_true')

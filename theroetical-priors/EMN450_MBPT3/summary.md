@@ -40,12 +40,13 @@ We implement two methods to stitch the EFT band to the crust
   * "switching" when the crust's sound speed crosses the sound speed of the mean from the EFT prediction
     - the uncertainty is "damped" below this matching point according to a half-cosine (modulates the marginal variance). This forces all realizations to closely follow the crust
     - there are several free parameters in this procedure
-      * ...
+      * `delta_logpc2` : controls the distance over which the half-cosine opperates
+      * `pow` : controls how much more the marginal variance is forced to shrink at pressures below `logpc2_match - delta_logpc2`
   * "conditioning" the EFT bands on the crust through standard GP regression.
     - the crust may be truncated to only be below a user-specified maximum baryon density
     - the crust is also modeled as having a small white-noise uncertainty to help with numerical stability
     - there are several free parameters in this procedure
-      * ...
+      * `sigma_crust` : the size of a the standard deviation for a white-noise kernel that is added to the crust
 
 ### condition an agnostic extension to match the EFT+crust process
 
@@ -66,7 +67,7 @@ These models trust the EFT calculation up to `~1.5*nsat` (`p/c2 = 1e13 g/cm^3`).
 
 |                      |switching to crust near `0.25*nsat`|conditioning on crust up to `0.25*nsat`|conditioning on crust up to `0.50*nsat`|
 |----------------------|-----------------------------------|---------------------------------------|---------------------------------------|
-|GP construction       |
+|GP construction       |<img src="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_switch_maxpc2-1e13.png">|
 |sound-speed vs density|
 |pressure vs density   |
 |mass vs radius        |
