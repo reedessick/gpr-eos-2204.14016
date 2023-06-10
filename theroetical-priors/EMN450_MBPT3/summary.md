@@ -55,7 +55,7 @@ We implement two methods to stitch the EFT band to the crust
 ### 4) condition an agnostic extension to match the EFT+crust process
 
 We follow the process described [here](https://github.com/reedessick/universality/blob/master/notes/fix-marginal.pdf).
-Within this procedure, we use a relatively long "smoothing length" (`5.0`) and a small "smoothing sigma" (0.01).
+Within this procedure, we use a relatively long "smoothing length" (`5.0`) and a small "smoothing sigma" (`0.01`).
 
 The model-agnostic extensions to high densities are similar to those defined in [arXiv:1910.09740](https://arxiv.org/abs/1910.09740) and subsequently used in [arXiv:2004.07744](https://arxiv.org/abs/2004.07744), [arXiv:2102.10074](https://arxiv.org/abs/2102.10074), and [arXiv:2107.05528](https://arxiv.org/abs/2107.05528) among others.
 
