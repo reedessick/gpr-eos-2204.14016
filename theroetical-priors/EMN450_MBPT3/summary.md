@@ -32,7 +32,7 @@ The covariance kernel is defined as
 ```math
     C_{ij} = s^2 \sigma(x_i) \sigma(x_j) \exp(-(x_i - x_j)^2 / l^2)
 ```
-where `sigma(x_i)` is set by the observed spread in the tabular data at `x_i`. There are two free parameters in this kernel
+where `sigma(x_i)` is set by the observed spread in the tabular data at `x_i`. We also impose a lower limit on `sigma(x_i)` to keep it from becoming so small that it affects numerical stability (`sigma >= 5e-2`). There are two free parameters in this kernel
 
   * `s` : an overall scale to control how much variance there is
   * `l` : a correlation length determining how much the curves can wiggle within this band
@@ -48,9 +48,10 @@ We implement two methods to stitch the EFT band to the crust
       * `pow` : controls how much more the marginal variance is forced to shrink at pressures below `logpc2_match - delta_logpc2`
   * "conditioning" the EFT bands on the crust through standard GP regression.
     - the crust may be truncated to only be below a user-specified maximum baryon density
-    - the crust is also modeled as having a small white-noise uncertainty to help with numerical stability
+    - the crust is also modeled as having a small white-noise uncertainty to help with numerical stability. This grows with pressure (the crust is less certain at higher pressures)
     - there are several free parameters in this procedure
       * `sigma_crust` : the size of a the standard deviation for a white-noise kernel that is added to the crust
+      * `sigma_pow` : how the white noise scales with pressure `cov[i,i] = sigma_curst**2 * (p[i]/p[-1])**pow`
 
 ### 4) condition an agnostic extension to match the EFT+crust process
 
