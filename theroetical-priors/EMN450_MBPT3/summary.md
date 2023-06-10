@@ -48,10 +48,10 @@ We implement two methods to stitch the EFT band to the crust
       * `pow` : controls how much more the marginal variance is forced to shrink at pressures below `logpc2_match - delta_logpc2`
   * "conditioning" the EFT bands on the crust through standard GP regression.
     - the crust may be truncated to only be below a user-specified maximum baryon density
-    - the crust is also modeled as having a small white-noise uncertainty to help with numerical stability. This grows with pressure (the crust is less certain at higher pressures)
+    - the crust is also modeled as having a small white-noise uncertainty to help with numerical stability. This grows with pressure (the crust is less certain at higher pressures): `cov[i,i] = sigma_curst**2 * (p[i]/p[-1])**pow`
     - there are several free parameters in this procedure
       * `sigma_crust` : the size of a the standard deviation for a white-noise kernel that is added to the crust
-      * `sigma_pow` : how the white noise scales with pressure `cov[i,i] = sigma_curst**2 * (p[i]/p[-1])**pow`
+      * `sigma_pow` : how the white noise scales with pressure
 
 ### 4) condition an agnostic extension to match the EFT+crust process
 
@@ -62,7 +62,7 @@ The model-agnostic extensions to high densities are similar to those defined in 
 
 ### draw realizations and solve the TOV equations
 
-There is an additional step that actually stitches the GP realization to a crust. However, this is done at very low densities (`pressurec2 = 1e11 g/cm^3`), well below where we make the GP closely follow the crust in the previous steps.
+There is an additional step that actually stitches the GP realization to a crust. However, this is done at very low densities (`pressurec2 = 1e11 g/cm^3`), well below where we make the GP closely follow the crust in the [previous steps](#3-stitch-the-gp-model-for-the-eft-band-to-the-crust).
 
 --------------------------------------------------
 
