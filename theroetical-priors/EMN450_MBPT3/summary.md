@@ -83,9 +83,9 @@ These models trust the N3LO EFT calculation up to `~1.5*nsat` (`p/c2 = 1e13 g/cm
 
 ### Observations
 
-Conditioning the GP model of the EFT band on the crust can lead to some unwanted features. For example, there appear to be issues with numerical stability of the inversion (the mean process deviates wildly) and the relatively long correlation lengths assumed within the EFT band can mean that the resulting process "misses" the EFT band over a large pressure range.
+Conditioning the GP model of the EFT band on the crust can lead to some unwanted features. For example, the relatively long correlation lengths assumed within the EFT band can mean that the resulting process "misses" the EFT band over a large pressure range.
 
-On the other hand, "switching" to the crust appears to produce a much more controled transition that consistently follows the EFT band over the entire range of pressures considered.
+While, "switching" to the crust can produce a more controled transition that consistently follows the EFT band over the entire range of pressures considered, so does conditioning on the crust at a lower density (`0.25*nsat` vs `0.50*nsat`).
 
 Nonetheless, the impact of these choices on the M-R curves appears to be relatively small, unless the conditiond mean does something really wacky.
 
@@ -93,7 +93,7 @@ Nonetheless, the impact of these choices on the M-R curves appears to be relativ
 
 ## Impact of "wiggles" within EFT band
 
-The following examples show the impact of wiggles in `cs2c2` within the EFT band. As described at length in, e.g., [arXiv:2004.07232](https://arxiv.org/abs/2004.07232), we expect the uncertainty in the EFT calculation to be correlated across densities. However, the bands from [arXiv:2204.14016](https://arxiv.org/abs/2204.14016) do not account for any such correlation. We investigate whether the presence of wiggles in the sound speed (that are still bounded within the EFT band) have a significant impact on macroscopic properties of NSs. See also discussion in [arXiv:2305.07411](https://arxiv.org/abs/2305.07411) and references therein.
+The following examples show the impact of wiggles in `cs2c2` within the EFT band. As described at length in, e.g., [arXiv:2004.07232](https://arxiv.org/abs/2004.07232), we expect the uncertainty in the EFT calculation to be correlated across densities. However, the bands from [arXiv:2204.14016](https://arxiv.org/abs/2204.14016) do not account for any such correlation. We investigate whether the presence of wiggles in the sound speed (that are still approximately bounded within the EFT band) have a significant impact on macroscopic properties of NSs. See also discussion in [arXiv:2305.07411](https://arxiv.org/abs/2305.07411) and references therein.
 
 Below, I show the results of the "condition near `0.5*nsat`" stitching to the crust and extensions to higher densities loosely based on hadronic EoS.
 These models trust the N3LO EFT calculation up to `~1.5*nsat` (`p/c2 = 1e13 g/cm^3`).
@@ -112,7 +112,9 @@ Allowing for many wiggles within the EFT band appears to come close to numerical
 
 *However*, there is an important difference in the pressure vs density (and therefore mass vs radius) curves. When we allow there to be many wiggles in `cs2c2`, they tend to "average out" in the pressure vs. density. That is, the resulting set of curves for the pressure vs density tend to more closely follow the mean (a tighter distribution). As a consequence, the distribution of mass vs radius curves is also tighter.
 
-This behavior can be understood as an averaging process. If we consider a model in which the sound speed is completely uncorrelated from one density to the next, then each little density region will be a separate (independent) trial. When we integrate the sound speed to obtain the pressure, we de facto sum over many such trials. The distribution of that sum will be tightly constrained around the mean, with a spread set by the intrinsic spread of the individual sound-speed realizations and the effective number of trials (how many wiggles are allowed).
+This behavior can be understood as an averaging process. If we consider a model in which the sound speed is completely uncorrelated from one density to the next, then each little density region will be a separate (independent) trial. When we integrate the sound speed to obtain the pressure, we *de facto* sum over many such trials. The distribution of that sum will be tightly constrained around the mean, with a spread set by the intrinsic spread of the individual sound-speed realizations and the effective number of trials (how many wiggles are allowed).
+
+The issues with conditioning on the crust up to high densities (`0.5*nsat`) with a long correlation length (`l=2.00`) are more apparent as well. In this case, they lead to systematically softer EoS (lower `cs2c2`).
 
 --------------------------------------------------
 
@@ -135,6 +137,6 @@ These models trust the each EFT calculation up to `~1.5*nsat` (`p/c2 = 1e13 g/cm
 
 As expected, the higher-order calculation has a smaller uncertainty in the sound-speed within the EFT band. This translates to a smaller uncertainty in pressure vs. density and a smaller spread in mass vs radius.
 
-*However*, the extension to high densities can still probe roughly equivalent parts of the mass-radius plane. It would likely take many more draws from these prior processes to confidently distinguish between them at high densities. [arXiv:2004.07744](https://arxiv.org/abs/2004.07744) suggests that tighter constraints at low densities may translate into tighter constraints at high densities, but the improvements in the constraints at low densities between the N2LO and N3LO calculations may be too small to become immediately apparent. We may also need to include astrophysical data before these differences appear.
+*However*, the extension to high densities can still probe roughly equivalent parts of the mass-radius plane. It would likely take many more draws from these prior processes to confidently distinguish between them at high densities. [arXiv:2004.07744](https://arxiv.org/abs/2004.07744) suggests that tighter constraints at low densities may translate into tighter constraints at high densities, but the improvements in the constraints at low densities between the N2LO and N3LO calculations may be too small to become immediately apparent. With the limited sample sample size drawn here, we do see slightly larger `R(1.4)` with N2LO than with N3LO, but we may also need to include astrophysical data before these differences more clearly appear.
 
 It does appear that our stitching logic produces slightly wider uncertainties at the lowest densities for N2LO compared to N3LO. This will naturally manifest in the pressure vs density and mass vs radius planes. However, given that we see very little impact from the precise way the N3LO bands are stitched to the crust, the additional uncertainty in the N2LO process is probably not only due to this additional uncertainty at very low densities. The extra spread between `0.5*nsat` to `1.5*nsat` likely dominates.
