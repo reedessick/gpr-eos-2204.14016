@@ -61,7 +61,7 @@ The model-agnostic extensions to high densities are similar to those defined in 
 
 ### draw realizations and solve the TOV equations
 
-There is an additional step that actually stitches the GP realization to a crust. However, this is done at very low densities, well below where we make the GP closely follow the crust in the previous steps.
+There is an additional step that actually stitches the GP realization to a crust. However, this is done at very low densities (`pressurec2 = 1e11 g/cm^3`), well below where we make the GP closely follow the crust in the previous steps.
 
 --------------------------------------------------
 
