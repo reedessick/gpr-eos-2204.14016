@@ -69,7 +69,7 @@ There is an additional step that actually stitches the GP realization to a crust
 
 The following examples show the impact of stitching choices on the distribution of macroscopic properties of NSs.
 
-I show the results for the N3LO EFT data with `s=0.75`, `l=1.00`, and extensions to higher densities loosely based on hadronic EoS.
+I show the results for the N3LO EFT data with `s=0.75`, `l=2.00`, and extensions to higher densities loosely based on hadronic EoS.
 These models trust the N3LO EFT calculation up to `~1.5*nsat` (`p/c2 = 1e13 g/cm^3`).
 
 |                      |switching to crust near `0.25*nsat`|conditioning on crust up to `0.25*nsat`|conditioning on crust up to `0.50*nsat`|
