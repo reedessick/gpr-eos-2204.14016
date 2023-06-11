@@ -327,35 +327,36 @@ do
                         sample="-s $I $outpath --samples-alpha $I 0.25 --samples-color $I k"
 
                         # plot this realization individually
-#                        echo \
-#                        plot-eos \
-#                            energy_densityc2 pressurec2 \
-#                            --logcolumn energy_densityc2 --logcolumn pressurec2 \
-#                            --column-label energy_densityc2 '$\varepsilon/c^2$' \
-#                            --column-label pressurec2 '$p/c^2$' \
-#                            --column-range energy_densityc2 2e13 1e15 \
-#                            --column-range pressurec2 3e10 1e15 \
-#                            -v \
-#                            -o $OUTDIR/$FTAG/samples \
-#                            -t pc2-$FTAG-draw-$I \
-#                            --grid \
-#                            $sample $reference \
-#                        || exit 1
 
 #                        echo \
-#                        plot-eos \
-#                            energy_densityc2 cs2c2 \
-#                            --logcolumn energy_densityc2 --logcolumn cs2c2 \
-#                            --column-label energy_densityc2 '$\varepsilon/c^2$' \
-#                            --column-label cs2c2 '$c_s^2/c^2$' \
-#                            --column-range energy_densityc2 2e13 1e15 \
-#                            --column-range cs2c2 0.002 1.0 \
-#                            -v \
-#                            -o $OUTDIR/$FTAG/samples \
-#                            -t cs2c2-$FTAG-draw-$I \
-#                            --grid \
-#                            $sample $reference \
-#                        || exit 1
+                        plot-eos \
+                            energy_densityc2 pressurec2 \
+                            --logcolumn energy_densityc2 --logcolumn pressurec2 \
+                            --column-label energy_densityc2 '$\varepsilon/c^2$' \
+                            --column-label pressurec2 '$p/c^2$' \
+                            --column-range energy_densityc2 1e13 1e16 \
+                            --column-range pressurec2 1e10 1e16 \
+                            -v \
+                            -o $OUTDIR/$FTAG/samples \
+                            -t pc2-$FTAG-draw-$I \
+                            --grid \
+                            $sample $reference \
+                        || exit 1
+
+#                        echo \
+                        plot-eos \
+                            energy_densityc2 cs2c2 \
+                            --logcolumn energy_densityc2 --logcolumn cs2c2 \
+                            --column-label energy_densityc2 '$\varepsilon/c^2$' \
+                            --column-label cs2c2 '$c_s^2/c^2$' \
+                            --column-range energy_densityc2 1e13 1e16 \
+                            --column-range cs2c2 0.001 1.0 \
+                            -v \
+                            -o $OUTDIR/$FTAG/samples \
+                            -t cs2c2-$FTAG-draw-$I \
+                            --grid \
+                            $sample $reference \
+                        || exit 1
 
                         samples="$samples $sample"
                         macsamples="$macsamples -s $I $macpath --samples-alpha $I 0.25 --samples-color $I k"
@@ -394,6 +395,38 @@ do
                         -v \
                         -o $OUTDIR/$FTAG \
                         -t cs2c2-$FTAG \
+                        --grid \
+                        $samples $reference \
+                    || exit 1
+
+                    ### plot zooms
+
+#                    echo \
+                    plot-eos \
+                        energy_densityc2 pressurec2 \
+                        --logcolumn energy_densityc2 --logcolumn pressurec2 \
+                        --column-label energy_densityc2 '$\varepsilon/c^2$' \
+                        --column-label pressurec2 '$p/c^2$' \
+                        --column-range energy_densityc2 3e13 5e14 \
+                        --column-range pressurec2 7e10 2e13 \
+                        -v \
+                        -o $OUTDIR/$FTAG \
+                        -t zoom-pc2-$FTAG \
+                        --grid \
+                        $samples $reference \
+                    || exit 1
+
+#                    echo \
+                    plot-eos \
+                        energy_densityc2 cs2c2 \
+                        --logcolumn energy_densityc2 --logcolumn cs2c2 \
+                        --column-label energy_densityc2 '$\varepsilon/c^2$' \
+                        --column-label cs2c2 '$c_s^2/c^2$' \
+                        --column-range energy_densityc2 3e13 5e14 \
+                        --column-range cs2c2 0.003 0.1 \
+                        -v \
+                        -o $OUTDIR/$FTAG \
+                        -t zoom-cs2c2-$FTAG \
                         --grid \
                         $samples $reference \
                     || exit 1
@@ -449,11 +482,27 @@ do
                         --logcolumn Lambda \
                         --column-label Lambda '$\Lambda$' \
                         --column-label M '$M\,[M_\odot]$' \
-                        --column-range Lambda 1.0 10000 \
+                        --column-range Lambda 1.0 1e5 \
                         --column-range M 0.1 3.0 \
                         -v \
                         -o $OUTDIR/$FTAG \
                         -t M-Lambda-$FTAG \
+                        --grid \
+                        $macsamples \
+                    || exit 1
+
+                    # finally, plot zooms
+
+#                    echo \
+                    plot-eos \
+                        R M \
+                        --column-label R '$R\,[\mathrm{km}]$' \
+                        --column-label M '$M\,[M_\odot]$' \
+                        --column-range R 10.0 35 \
+                        --column-range M 0.1 0.5 \
+                        -v \
+                        -o $OUTDIR/$FTAG \
+                        -t zoom-M-R-$FTAG \
                         --grid \
                         $macsamples \
                     || exit 1
