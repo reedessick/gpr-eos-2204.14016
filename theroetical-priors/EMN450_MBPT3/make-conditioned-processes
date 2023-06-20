@@ -19,7 +19,9 @@ MAX_GRID_PC2="1e17"
 NUM_EOS_FOR_DISTRIBUTIONS=1000 ### for distributions at reference pressures
 
 #NUM_EOS_SAMPLES=1000           ### for actual realizations (via draw-gpr)
-NUM_EOS_SAMPLES=50           ### for actual realizations (via draw-gpr)
+NUM_EOS_SAMPLES=10000           ### for actual realizations (via draw-gpr)
+
+SAMPLE_ALPHA=0.05
 
 #------------------------
 
@@ -51,17 +53,17 @@ declare -A SCALE_NAMES
 declare -A LENGTHS
 declare -A LENGTH_NAMES
 
-WIGGLE_PARAMS="$WIGGLE_PARAMS 1d20-0d125"
-SCALES[1d20-0d125]=1.2
-SCALE_NAMES[1d20-0d125]="01d20"
-LENGTHS[1d20-0d125]=0.125
-LENGTH_NAMES[1d20-0d125]="000d125"
+#WIGGLE_PARAMS="$WIGGLE_PARAMS 1d20-0d125"
+#SCALES[1d20-0d125]=1.2
+#SCALE_NAMES[1d20-0d125]="01d20"
+#LENGTHS[1d20-0d125]=0.125
+#LENGTH_NAMES[1d20-0d125]="000d125"
 
-WIGGLE_PARAMS="$WIGGLE_PARAMS 1d00-0d25"
-SCALES[1d00-0d25]=1.0
-SCALE_NAMES[1d00-0d25]="01d00"
-LENGTHS[1d00-0d25]=0.25
-LENGTH_NAMES[1d00-0d25]="000d250"
+#WIGGLE_PARAMS="$WIGGLE_PARAMS 1d00-0d25"
+#SCALES[1d00-0d25]=1.0
+#SCALE_NAMES[1d00-0d25]="01d00"
+#LENGTHS[1d00-0d25]=0.25
+#LENGTH_NAMES[1d00-0d25]="000d250"
 
 WIGGLE_PARAMS="$WIGGLE_PARAMS 1d00-0d50"
 SCALES[1d00-0d50]=1.0
@@ -75,17 +77,17 @@ SCALE_NAMES[0d75-1d00]="00d75"
 LENGTHS[0d75-1d00]=1.00
 LENGTH_NAMES[0d75-1d00]="001d000"
 
-WIGGLE_PARAMS="$WIGGLE_PARAMS 0d75-2d00"
-SCALES[0d75-2d00]=0.75
-SCALE_NAMES[0d75-2d00]="00d75"
-LENGTHS[0d75-2d00]=2.00
-LENGTH_NAMES[0d75-2d00]="002d000"
+#WIGGLE_PARAMS="$WIGGLE_PARAMS 0d75-2d00"
+#SCALES[0d75-2d00]=0.75
+#SCALE_NAMES[0d75-2d00]="00d75"
+#LENGTHS[0d75-2d00]=2.00
+#LENGTH_NAMES[0d75-2d00]="002d000"
 
-WIGGLE_PARAMS="$WIGGLE_PARAMS 0d75-4d00"
-SCALES[0d75-4d00]=0.75
-SCALE_NAMES[0d75-4d00]="00d75"
-LENGTHS[0d75-4d00]=4.00
-LENGTH_NAMES[0d75-4d00]="004d000"
+#WIGGLE_PARAMS="$WIGGLE_PARAMS 0d75-4d00"
+#SCALES[0d75-4d00]=0.75
+#SCALE_NAMES[0d75-4d00]="00d75"
+#LENGTHS[0d75-4d00]=4.00
+#LENGTH_NAMES[0d75-4d00]="004d000"
 
 #-------------------------------------------------
 
@@ -99,8 +101,8 @@ REFERENCE_PRESSUREC2="1e11" # we're likely to switch to the crust at or above p/
 STITCH_LOGIC=""
 declare -A STITCH_ARGS
 
-STITCH_LOGIC="$STITCH_LOGIC switch"
-STITCH_ARGS["switch"]="--stitch-logic switch --stitch-switch-delta-logpc2 2.0 --stitch-switch-pow 1.0"
+#STITCH_LOGIC="$STITCH_LOGIC switch"
+#STITCH_ARGS["switch"]="--stitch-logic switch --stitch-switch-delta-logpc2 2.0 --stitch-switch-pow 1.0"
 
 STITCH_LOGIC="$STITCH_LOGIC cond"
 STITCH_ARGS["cond"]="--stitch-logic condition --stitch-condition-sigma 5e-2 --stitch-condition-pow 1.0"
@@ -324,7 +326,7 @@ do
                             $phipath $REFERENCE_PRESSUREC2 \
                         || exit 1
 
-                        sample="-s $I $outpath --samples-alpha $I 0.25 --samples-color $I k"
+                        sample="-s $I $outpath --samples-alpha $I $SAMPLE_ALPHA --samples-color $I k"
 
                         # plot this realization individually
 
@@ -359,7 +361,7 @@ do
                         || exit 1
 
                         samples="$samples $sample"
-                        macsamples="$macsamples -s $I $macpath --samples-alpha $I 0.25 --samples-color $I k"
+                        macsamples="$macsamples -s $I $macpath --samples-alpha $I $SAMPLE_ALPHA --samples-color $I k"
 
                         echo $i >> $MANIFEST ### add this EoS realization to manifest
 
