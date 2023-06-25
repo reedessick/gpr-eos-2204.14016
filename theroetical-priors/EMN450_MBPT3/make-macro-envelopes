@@ -1,0 +1,69 @@
+#!/bin/bash
+
+### a quick script to make envelope plots
+### Reed Essick (reed.essick@gmail.com)
+
+#-------------------------------------------------
+
+declare -A YMIN
+declare -A YMAX
+declare -A YLABEL
+declare -A EXTRA
+
+YMIN["R"]=" 6.0"
+YMAX["R"]="30.0"
+YLABEL["R"]="\$R\,[\\mathrm{km}]\$"
+
+YMIN["Lambda"]="0.0"
+YMAX["Lambda"]="1000.0"
+YLABEL["Lambda"]="\$\\log_{10}\\Lambda\$"
+EXTRA["Lambda"]="--logcolumn Lambda --y-multiplier 0.4342944819032518"
+
+#-------------------------------------------------
+
+for WIGGLE in "01d00_000d500" "00d75_001d000"
+do
+
+    for STITCH in "cond" "trunc+cond"
+    do
+
+        for YCOLUMN in "R" "Lambda"
+        do
+
+            NTwoLO="2023-06-09-EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands_${WIGGLE}_${STITCH}_maxpc2-1e13_hadagn_05d000_00d010/manifest-M-${YCOLUMN}-quantiles-EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands_${WIGGLE}_${STITCH}_maxpc2-1e13_hadagn_05d000_00d010.csv"
+            NThreeLO="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_${WIGGLE}_${STITCH}_maxpc2-1e13_hadagn_05d000_00d010/manifest-M-${YCOLUMN}-quantiles-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_${WIGGLE}_${STITCH}_maxpc2-1e13_hadagn_05d000_00d010.csv"
+
+            TAG="M-${YCOLUMN}-2023-06-09-EMN450_NXLO_MBPT3_beta_equilibrium_eft_bands_${WIGGLE}_${STITCH}_maxpc2-1e13_hadagn_05d000_00d010"
+
+#            echo \
+            plot-quantiles \
+                "M" $YCOLUMN 0.10 1.50 \
+                --column-label "M" "\$M\,[M_\\odot]\$" \
+                --column-label $YCOLUMN ${YLABEL[$YCOLUMN]} \
+                --ymin ${YMIN[$YCOLUMN]} \
+                --ymax ${YMAX[$YCOLUMN]} \
+                ${EXTRA[$YCOLUMN]} \
+                -s "N2LO" $NTwoLO \
+                --color "N2LO" "k" \
+                --alpha "N2LO" 0.50 \
+                -s "N3LO" $NThreeLO \
+                --color "N3LO" "r" \
+                --alpha "N3LO" 0.25 \
+                --filled "N3LO" \
+                --num-points 101 \
+                --quantile 0.05 \
+                --quantile 0.50 \
+                --quantile 0.95 \
+                --quantile-type "sym" \
+                --output-dir "." \
+                --tag $TAG \
+                --legend \
+                --Verbose \
+            || exit 1
+
+#                --quantile 0.25 \
+#                --quantile 0.75 \
+
+        done
+    done
+done
