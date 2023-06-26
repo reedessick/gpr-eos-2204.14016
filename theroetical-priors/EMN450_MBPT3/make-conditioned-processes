@@ -576,7 +576,6 @@ do
                                 --eos-num-per-dir "1000" \
                                 --eos-basename "eos-draw-%(draw)06d.csv" \
                                 --num-points 1001 \
-                                --max-num-samples 100 \
                                 --Verbose \
                             || exit 1
 

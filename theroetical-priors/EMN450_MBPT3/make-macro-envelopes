@@ -14,7 +14,7 @@ YMIN["R"]=" 5.0"
 YMAX["R"]="25.0"
 YLABEL["R"]="\$R\,[\\mathrm{km}]\$"
 
-YMIN["Lambda"]="1.0e0"
+YMIN["Lambda"]="1.0e1"
 YMAX["Lambda"]="3.0e7"
 YLABEL["Lambda"]="\$\\Lambda\$"
 EXTRA["Lambda"]="--logcolumn Lambda"
