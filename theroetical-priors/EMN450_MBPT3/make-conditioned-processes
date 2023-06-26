@@ -540,7 +540,7 @@ do
 
                         QUANTILES="${OUTDIR}/${FTAG}/manifest-M-${YCOLUMN}-quantiles-${FTAG}.csv"
 
-#                        echo \
+                        echo \
                         process2quantiles \
                             $MANIFEST $QUANTILES \
                             "M" $YCOLUMN "0.05" "3.0" \
@@ -556,9 +556,32 @@ do
                             --Verbose \
                         || exit 1
 
-#                            --max-num-samples 1000 \
-
                     done
+
+                    for XCOLUMN in "baryon_density" "energy_densityc2"
+                    do
+
+                        for YCOLUMN in "pressurec2" "cs2c2"
+                        do
+
+
+                            QUANTILES="${OUTDIR}/${FTAG}/manifest-${XCOLUMN}-${YCOLUMN}-quantiles-${FTAG}.csv"
+
+#                            echo \
+                            process2quantiles \
+                                $MANIFEST $QUANTILES \
+                                $XCOLUMN $YCOLUMN "2.8e12" "2.8e16" \
+                                --eos-column $EOS_COLUMN \
+                                --eos-dir ${OUTDIR}/${FTAG} \
+                                --eos-num-per-dir "1000" \
+                                --eos-basename "eos-draw-%(draw)06d.csv" \
+                                --num-points 1001 \
+                                --Verbose \
+                            || exit 1
+
+                        done
+                    done
+
                 done
             done
         done
