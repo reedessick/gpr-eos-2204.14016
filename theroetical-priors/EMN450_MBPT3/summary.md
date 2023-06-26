@@ -158,10 +158,10 @@ The solid line is the median.
 |<img src="plot-quantiles_M-R-2023-06-09-EMN450_NXLO_MBPT3_beta_equilibrium_eft_bands_01d00_000d500_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010.png">|<img src="./plot-quantiles_M-Lambda-2023-06-09-EMN450_NXLO_MBPT3_beta_equilibrium_eft_bands_01d00_000d500_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010.png">|
 |<img src="plot-quantiles_zoom-M-R-2023-06-09-EMN450_NXLO_MBPT3_beta_equilibrium_eft_bands_01d00_000d500_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010.png">|<img src="./plot-quantiles_zoom-M-Lambda-2023-06-09-EMN450_NXLO_MBPT3_beta_equilibrium_eft_bands_01d00_000d500_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010.png">|
 
-**Add estimates of credible regions for these processes**
-
-  * `p(rho)`?
-  * `cs2c2(rho)`?
+| |rest-mass density|energy density|
+|---|---|---|
+|pressure|<img src="plot-quantiles_baryon_density-pressurec2-2023-06-09-EMN450_NXLO_MBPT3_beta_equilibrium_eft_bands_01d00_000d500_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010.png">|<img src="./plot-quantiles_energy_densityc2-pressurec2-2023-06-09-EMN450_NXLO_MBPT3_beta_equilibrium_eft_bands_01d00_000d500_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010.png">||
+|sound-speed|<img src="plot-quantiles_baryon_density-cs2c2-2023-06-09-EMN450_NXLO_MBPT3_beta_equilibrium_eft_bands_01d00_000d500_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010.png">|<img src="./plot-quantiles_energy_cs2c2-pressurec2-2023-06-09-EMN450_NXLO_MBPT3_beta_equilibrium_eft_bands_01d00_000d500_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010.png">||
 
 ### Observations
 
