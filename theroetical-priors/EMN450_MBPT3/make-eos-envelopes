@@ -10,11 +10,11 @@ declare -A MAX
 declare -A LABEL
 
 MIN["baryon_density"]="2.8e13"
-MAX["baryon_density"]="2.8e16"
+MAX["baryon_density"]="5.6e15"
 LABEL["baryon_density"]="\$\\rho\,[\\mathrm{g}/\\mathrm{cm}^3]\$"
 
 MIN["energy_densityc2"]="2.8e13"
-MAX["energy_densityc2"]="2.8e16"
+MAX["energy_densityc2"]="5.6e15"
 LABEL["energy_densityc2"]="\$\\varepsilon\,[\\mathrm{g}/\\mathrm{cm}^3]\$"
 
 MIN["pressurec2"]="1.0e11"
