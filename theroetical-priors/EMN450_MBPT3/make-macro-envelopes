@@ -10,8 +10,8 @@ declare -A YMAX
 declare -A YLABEL
 declare -A EXTRA
 
-YMIN["R"]=" 0.0"
-YMAX["R"]="20.0"
+YMIN["R"]=" 0.5"
+YMAX["R"]="25.0"
 YLABEL["R"]="\$R\,[\\mathrm{km}]\$"
 
 YMIN["Lambda"]="1.0e0"
@@ -65,8 +65,40 @@ do
                 --Verbose \
             || exit 1
 
-#                --quantile 0.25 \
-#                --quantile 0.75 \
+            #---
+
+            # plot zooms
+
+#            echo \
+            plot-quantiles \
+                "M" $YCOLUMN 0.10 0.55 \
+                --column-label "M" "\$M\,[M_\\odot]\$" \
+                --column-label $YCOLUMN ${YLABEL[$YCOLUMN]} \
+                --ymin ${YMIN[$YCOLUMN]} \
+                --ymax ${YMAX[$YCOLUMN]} \
+                ${EXTRA[$YCOLUMN]} \
+                -s "N2LO" $NTwoLO \
+                --color "N2LO" "k" \
+                --alpha "N2LO" 0.10 \
+                --filled "N2LO" \
+                -s "N3LO" $NThreeLO \
+                --color "N3LO" "r" \
+                --alpha "N3LO" 0.10 \
+                --filled "N3LO" \
+                --num-points 501 \
+                --quantile 0.05 \
+                --quantile 0.25 \
+                --quantile 0.50 \
+                --quantile 0.75 \
+                --quantile 0.95 \
+                --quantile-type "sym" \
+                --output-dir "." \
+                --tag "zoom-$TAG" \
+                --figtype png --figtype pdf \
+                --legend \
+                --Verbose \
+            || exit 1
+
 
         done
     done

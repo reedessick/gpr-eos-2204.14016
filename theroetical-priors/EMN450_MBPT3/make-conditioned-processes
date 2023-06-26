@@ -553,11 +553,11 @@ do
                             --branches-dir ${OUTDIR}/${FTAG} \
                             --selection-rule "min" \
                             --num-points 1001 \
-                            --max-num-samples 1000 \
                             --Verbose \
                         || exit 1
 
 #                            --selection-rule "random" \ # I want to use this, but need to teach the code how to exclude regions of central density, etc in order to keep only the branches that I want
+#                            --max-num-samples 1000 \
 
                     done
                 done
