@@ -10,11 +10,11 @@ declare -A MAX
 declare -A LABEL
 
 MIN["baryon_density"]="2.8e13"
-MAX["baryon_density"]="2.8e15"
+MAX["baryon_density"]="2.8e16"
 LABEL["baryon_density"]="\$\\rho\,[\\mathrm{g}/\\mathrm{cm}^3]\$"
 
 MIN["energy_densityc2"]="2.8e13"
-MAX["energy_densityc2"]="2.8e15"
+MAX["energy_densityc2"]="2.8e16"
 LABEL["energy_densityc2"]="\$\\varepsilon\,[\\mathrm{g}/\\mathrm{cm}^3]\$"
 
 MIN["pressurec2"]="1.0e11"
@@ -24,6 +24,10 @@ LABEL["pressurec2"]="\$p/c^2\,[\\mathrm{g}/\\mathrm{cm}^3]\$"
 MIN["cs2c2"]="1.0e-3"
 MAX["cs2c2"]="1.0"
 LABEL["cs2c2"]="\$c_s^2/c^2\$"
+
+#-------------------------------------------------
+
+STITCH_REF="00d00_001d000"
 
 #-------------------------------------------------
 
@@ -44,6 +48,12 @@ do
 
                 TAG="${XCOLUMN}-${YCOLUMN}-2023-06-09-EMN450_NXLO_MBPT3_beta_equilibrium_eft_bands_${WIGGLE}_${STITCH}_maxpc2-1e13_hadagn_05d000_00d010"
 
+                ### grab reference processes (zero width within EFT band)
+                NTwoLO_ref="2023-06-09-EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands_${WIGGLE}_${STITCH_REF}_maxpc2-1e13_hadagn_05d000_00d010/manifest-M-${YCOLUMN}-quantiles-EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands_${WIGGLE}_${STITCH_REF}_maxpc2-1e13_hadagn_05d000_00d010.csv"
+                NThreeLO_ref="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_${WIGGLE}_${STITCH_REF}_maxpc2-1e13_hadagn_05d000_00d010/manifest-M-${YCOLUMN}-quantiles-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_${WIGGLE}_${STITCH_REF}_maxpc2-1e13_hadagn_05d000_00d010.csv"
+
+                ### make the plot
+
 #                echo \
                 plot-quantiles \
                     $XCOLUMN $YCOLUMN ${MIN[$XCOLUMN]} ${MAX[$XCOLUMN]} \
@@ -54,7 +64,7 @@ do
                     --ymin ${MIN[$YCOLUMN]} \
                     --ymax ${MAX[$YCOLUMN]} \
                     -s "N2LO" $NTwoLO \
-                    --color "N2LO" "k" \
+                    --color "N2LO" "blue" \
                     --alpha "N2LO" 0.10 \
                     --filled "N2LO" \
                     -s "N3LO" $NThreeLO \
@@ -74,6 +84,15 @@ do
                     --legend \
                     --Verbose \
                 || exit 1
+
+#                    -s "N2LO-fixed" $NTwoLO_ref \
+#                    --color "N2LO-fixed" "cornflowerblue" \
+#                    --alpha "N2LO-fixed" 0.10 \
+#                    --filled "N2LO-fixed" \
+#                    -s "N3LO-fixed" $NThreeLO_ref \
+#                    --color "N3LO-fixed" "orange" \
+#                    --alpha "N3LO-fixed" 0.10 \
+#                    --filled "N3LO-fixed" \
 
             done
         done

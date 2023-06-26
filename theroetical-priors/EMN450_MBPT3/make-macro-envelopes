@@ -21,6 +21,10 @@ EXTRA["Lambda"]="--logcolumn Lambda"
 
 #-------------------------------------------------
 
+STITCH_REF="00d00_001d000"
+
+#-------------------------------------------------
+
 for WIGGLE in "01d00_000d500" "00d75_001d000"
 do
 
@@ -35,6 +39,12 @@ do
 
             TAG="M-${YCOLUMN}-2023-06-09-EMN450_NXLO_MBPT3_beta_equilibrium_eft_bands_${WIGGLE}_${STITCH}_maxpc2-1e13_hadagn_05d000_00d010"
 
+            ### grab reference processes (zero width within EFT band)
+            NTwoLO_ref="2023-06-09-EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands_${WIGGLE}_${STITCH_REF}_maxpc2-1e13_hadagn_05d000_00d010/manifest-M-${YCOLUMN}-quantiles-EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands_${WIGGLE}_${STITCH_REF}_maxpc2-1e13_hadagn_05d000_00d010.csv"
+            NThreeLO_ref="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_${WIGGLE}_${STITCH_REF}_maxpc2-1e13_hadagn_05d000_00d010/manifest-M-${YCOLUMN}-quantiles-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_${WIGGLE}_${STITCH_REF}_maxpc2-1e13_hadagn_05d000_00d010.csv"
+
+            ### make the plot
+
 #            echo \
             plot-quantiles \
                 "M" $YCOLUMN 0.10 3.00 \
@@ -44,7 +54,7 @@ do
                 --ymax ${YMAX[$YCOLUMN]} \
                 ${EXTRA[$YCOLUMN]} \
                 -s "N2LO" $NTwoLO \
-                --color "N2LO" "k" \
+                --color "N2LO" "blue" \
                 --alpha "N2LO" 0.10 \
                 --filled "N2LO" \
                 -s "N3LO" $NThreeLO \
@@ -65,6 +75,15 @@ do
                 --Verbose \
             || exit 1
 
+#                -s "N2LO-fixed" $NTwoLO_ref \
+#                --color "N2LO-fixed" "cornflowerblue" \
+#                --alpha "N2LO-fixed" 0.10 \
+#                --filled "N2LO-fixed" \
+#                -s "N3LO-fixed" $NThreeLO_ref \
+#                --color "N3LO-fixed" "orange" \
+#                --alpha "N3LO-fixed" 0.10 \
+#                --filled "N3LO-fixed" \
+
             #---
 
             # plot zooms
@@ -78,7 +97,7 @@ do
                 --ymax ${YMAX[$YCOLUMN]} \
                 ${EXTRA[$YCOLUMN]} \
                 -s "N2LO" $NTwoLO \
-                --color "N2LO" "k" \
+                --color "N2LO" "blue" \
                 --alpha "N2LO" 0.10 \
                 --filled "N2LO" \
                 -s "N3LO" $NThreeLO \
@@ -99,6 +118,14 @@ do
                 --Verbose \
             || exit 1
 
+#                -s "N2LO-fixed" $NTwoLO_ref \ 
+#                --color "N2LO-fixed" "cornflowerblue" \
+#                --alpha "N2LO-fixed" 0.10 \
+#                --filled "N2LO-fixed" \
+#                -s "N3LO-fixed" $NThreeLO_ref \
+#                --color "N3LO-fixed" "orange" \
+#                --alpha "N3LO-fixed" 0.10 \
+#                --filled "N3LO-fixed" \
 
         done
     done
