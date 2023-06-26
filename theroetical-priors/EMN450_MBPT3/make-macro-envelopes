@@ -57,10 +57,18 @@ do
                 --color "N2LO" "blue" \
                 --alpha "N2LO" 0.10 \
                 --filled "N2LO" \
+                -s "N2LO-fixed" $NTwoLO_ref \
+                --color "N2LO-fixed" "cornflowerblue" \
+                --alpha "N2LO-fixed" 0.10 \
+                --filled "N2LO-fixed" \
                 -s "N3LO" $NThreeLO \
                 --color "N3LO" "r" \
                 --alpha "N3LO" 0.10 \
                 --filled "N3LO" \
+                -s "N3LO-fixed" $NThreeLO_ref \
+                --color "N3LO-fixed" "orange" \
+                --alpha "N3LO-fixed" 0.10 \
+                --filled "N3LO-fixed" \
                 --num-points 501 \
                 --quantile 0.05 \
                 --quantile 0.25 \
@@ -74,15 +82,6 @@ do
                 --legend \
                 --Verbose \
             || exit 1
-
-#                -s "N2LO-fixed" $NTwoLO_ref \
-#                --color "N2LO-fixed" "cornflowerblue" \
-#                --alpha "N2LO-fixed" 0.10 \
-#                --filled "N2LO-fixed" \
-#                -s "N3LO-fixed" $NThreeLO_ref \
-#                --color "N3LO-fixed" "orange" \
-#                --alpha "N3LO-fixed" 0.10 \
-#                --filled "N3LO-fixed" \
 
             #---
 
@@ -100,10 +99,18 @@ do
                 --color "N2LO" "blue" \
                 --alpha "N2LO" 0.10 \
                 --filled "N2LO" \
+                -s "N2LO-fixed" $NTwoLO_ref \ 
+                --color "N2LO-fixed" "cornflowerblue" \
+                --alpha "N2LO-fixed" 0.10 \
+                --filled "N2LO-fixed" \
                 -s "N3LO" $NThreeLO \
                 --color "N3LO" "r" \
                 --alpha "N3LO" 0.10 \
                 --filled "N3LO" \
+                -s "N3LO-fixed" $NThreeLO_ref \
+                --color "N3LO-fixed" "orange" \
+                --alpha "N3LO-fixed" 0.10 \
+                --filled "N3LO-fixed" \
                 --num-points 501 \
                 --quantile 0.05 \
                 --quantile 0.25 \
@@ -117,15 +124,6 @@ do
                 --legend \
                 --Verbose \
             || exit 1
-
-#                -s "N2LO-fixed" $NTwoLO_ref \ 
-#                --color "N2LO-fixed" "cornflowerblue" \
-#                --alpha "N2LO-fixed" 0.10 \
-#                --filled "N2LO-fixed" \
-#                -s "N3LO-fixed" $NThreeLO_ref \
-#                --color "N3LO-fixed" "orange" \
-#                --alpha "N3LO-fixed" 0.10 \
-#                --filled "N3LO-fixed" \
 
         done
     done
