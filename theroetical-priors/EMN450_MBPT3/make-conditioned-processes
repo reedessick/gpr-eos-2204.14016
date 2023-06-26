@@ -551,12 +551,11 @@ do
                             --eos-basename "macro-draw-%(draw)06d.csv" \
                             --branches-basename "macro-draw-%(draw)06d-branches.csv" "central_pressurec2" "start_central_pressurec2" "end_central_pressurec2" \
                             --branches-dir ${OUTDIR}/${FTAG} \
-                            --selection-rule "min" \
+                            --selection-rule "random" \
                             --num-points 1001 \
                             --Verbose \
                         || exit 1
 
-#                            --selection-rule "random" \ # I want to use this, but need to teach the code how to exclude regions of central density, etc in order to keep only the branches that I want
 #                            --max-num-samples 1000 \
 
                     done

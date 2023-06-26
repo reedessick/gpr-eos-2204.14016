@@ -10,7 +10,7 @@ declare -A YMAX
 declare -A YLABEL
 declare -A EXTRA
 
-YMIN["R"]=" 0.5"
+YMIN["R"]=" 5.0"
 YMAX["R"]="25.0"
 YLABEL["R"]="\$R\,[\\mathrm{km}]\$"
 
