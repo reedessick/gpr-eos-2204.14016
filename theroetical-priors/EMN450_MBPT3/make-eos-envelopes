@@ -9,21 +9,21 @@ declare -A MIN
 declare -A MAX
 declare -A LABEL
 
-MIN["baryon_density"]="2.8e12"
-MAX["baryon_density"]="2.8e16"
-LABEL["baryon_density"]="\$\\log_{10}\\rho\,[\\mathrm{g}/\\mathrm{cm}^3]\$"
+MIN["baryon_density"]="2.8e13"
+MAX["baryon_density"]="2.8e15"
+LABEL["baryon_density"]="\$\\rho\,[\\mathrm{g}/\\mathrm{cm}^3]\$"
 
-MIN["energy_densityc2"]="2.8e12"
-MAX["energy_densityc2"]="2.8e16"
-LABEL["energy_densityc2"]="\$\\log_{10}\\varepsilon\,[\\mathrm{g}/\\mathrm{cm}^3]\$"
+MIN["energy_densityc2"]="2.8e13"
+MAX["energy_densityc2"]="2.8e15"
+LABEL["energy_densityc2"]="\$\\varepsilon\,[\\mathrm{g}/\\mathrm{cm}^3]\$"
 
-MIN["pressurec2"]="1.0e10"
+MIN["pressurec2"]="1.0e11"
 MAX["pressurec2"]="1.0e16"
-LABEL["pressurec2"]="\$\\log_{10}p/c^2\,[\\mathrm{g}/\\mathrm{cm}^3]\$"
+LABEL["pressurec2"]="\$p/c^2\,[\\mathrm{g}/\\mathrm{cm}^3]\$"
 
 MIN["cs2c2"]="1.0e-3"
 MAX["cs2c2"]="1.0"
-LABEL["cs2c2"]="\$\\log_{10}c_s^2/c^2\$"
+LABEL["cs2c2"]="\$c_s^2/c^2\$"
 
 #-------------------------------------------------
 
@@ -36,7 +36,7 @@ do
         for XCOLUMN in "baryon_density" "energy_densityc2"
         do
 
-            for YCOLUMN in "R" "Lambda"
+            for YCOLUMN in "pressurec2" "cs2c2"
             do
 
                 NTwoLO="2023-06-09-EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands_${WIGGLE}_${STITCH}_maxpc2-1e13_hadagn_05d000_00d010/manifest-${XCOLUMN}-${YCOLUMN}-quantiles-EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands_${WIGGLE}_${STITCH}_maxpc2-1e13_hadagn_05d000_00d010.csv"
@@ -49,10 +49,8 @@ do
                     $XCOLUMN $YCOLUMN ${MIN[$XCOLUMN]} ${MAX[$XCOLUMN]} \
                     --column-label $XCOLUMN ${LABEL[$XCOLUMN]} \
                     --logcolumn $XCOLUMN \
-                    --x-multiplier "0.4342944819032518" \
-                    --column-label $YCOLUMN ${LABEL[$COLUMN]} \
+                    --column-label $YCOLUMN ${LABEL[$YCOLUMN]} \
                     --logcolumn $YCOLUMN \
-                    --y-multiplier "0.4342944819032518" \
                     --ymin ${MIN[$YCOLUMN]} \
                     --ymax ${MAX[$YCOLUMN]} \
                     -s "N2LO" $NTwoLO \
