@@ -142,7 +142,7 @@ These models trust the each EFT calculation up to `~1.5*nsat` (`p/c2 = 1e13 g/cm
 |mass vs radius        |<img src="2023-06-09-EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010/plot-eos_M-R-EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010.png">|<img src="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010/plot-eos_M-R-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010.png">|
 ||<img src="2023-06-09-EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010/plot-eos_zoom-M-R-EMN450_N2LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010.png">|<img src="2023-06-09-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands/EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010/plot-eos_zoom-M-R-EMN450_N3LO_MBPT3_beta_equilibrium_eft_bands_00d75_001d000_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010.png">|
 
-### confidence regions
+### Credible regions
 
 Below, I show 50% and 90% symmetric credible regions for R(M) and Lambda(M) as a function of M derived from each process that conditions on the BPS crust up to `0.25*nsat`" and has plenty of wiggles (`s=1.00` & `l=0.50`).
 
