@@ -146,9 +146,9 @@ These models trust the each EFT calculation up to `~1.5*nsat` (`p/c2 = 1e13 g/cm
 
 Below, I show 50% and 90% symmetric credible regions for R(M) and Lambda(M) as a function of M derived from each process that conditions on the BPS crust up to `0.25*nsat`" and has plenty of wiggles (`s=1.00` & `l=0.50`).
 
-|---|---|
-|mass-radius|<img src="plot-quantiles_M-R-2023-06-09-EMN450_NXLO_MBPT3_beta_equilibrium_eft_bands_01d00_000d500_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010.png">|
-|mass-Lambda|<img src="./plot-quantiles_M-Lambda-2023-06-09-EMN450_NXLO_MBPT3_beta_equilibrium_eft_bands_01d00_000d500_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010.png">|
+<img src="plot-quantiles_M-R-2023-06-09-EMN450_NXLO_MBPT3_beta_equilibrium_eft_bands_01d00_000d500_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010.png">
+
+<img src="./plot-quantiles_M-Lambda-2023-06-09-EMN450_NXLO_MBPT3_beta_equilibrium_eft_bands_01d00_000d500_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010.png">
 
 **Add estimates of credible regions for these processes**
 
