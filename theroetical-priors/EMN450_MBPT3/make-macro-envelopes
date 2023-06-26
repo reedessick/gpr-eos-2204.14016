@@ -11,11 +11,11 @@ declare -A YLABEL
 declare -A EXTRA
 
 YMIN["R"]=" 0.0"
-YMAX["R"]="30.0"
+YMAX["R"]="20.0"
 YLABEL["R"]="\$R\,[\\mathrm{km}]\$"
 
 YMIN["Lambda"]="1.0e0"
-YMAX["Lambda"]="1.0e8"
+YMAX["Lambda"]="3.0e7"
 YLABEL["Lambda"]="\$\\log_{10}\\Lambda\$"
 EXTRA["Lambda"]="--logcolumn Lambda --y-multiplier 0.4342944819032518"
 
