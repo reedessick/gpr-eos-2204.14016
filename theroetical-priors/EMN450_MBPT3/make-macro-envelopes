@@ -10,12 +10,12 @@ declare -A YMAX
 declare -A YLABEL
 declare -A EXTRA
 
-YMIN["R"]=" 6.0"
+YMIN["R"]=" 0.0"
 YMAX["R"]="30.0"
 YLABEL["R"]="\$R\,[\\mathrm{km}]\$"
 
-YMIN["Lambda"]="0.0"
-YMAX["Lambda"]="1000.0"
+YMIN["Lambda"]="1.0e0"
+YMAX["Lambda"]="1.0e8"
 YLABEL["Lambda"]="\$\\log_{10}\\Lambda\$"
 EXTRA["Lambda"]="--logcolumn Lambda --y-multiplier 0.4342944819032518"
 
@@ -37,7 +37,7 @@ do
 
 #            echo \
             plot-quantiles \
-                "M" $YCOLUMN 0.10 1.50 \
+                "M" $YCOLUMN 0.10 3.00 \
                 --column-label "M" "\$M\,[M_\\odot]\$" \
                 --column-label $YCOLUMN ${YLABEL[$YCOLUMN]} \
                 --ymin ${YMIN[$YCOLUMN]} \
@@ -45,18 +45,22 @@ do
                 ${EXTRA[$YCOLUMN]} \
                 -s "N2LO" $NTwoLO \
                 --color "N2LO" "k" \
-                --alpha "N2LO" 0.50 \
+                --alpha "N2LO" 0.10 \
+                --filled "N2LO" \
                 -s "N3LO" $NThreeLO \
                 --color "N3LO" "r" \
-                --alpha "N3LO" 0.25 \
+                --alpha "N3LO" 0.10 \
                 --filled "N3LO" \
-                --num-points 101 \
+                --num-points 501 \
                 --quantile 0.05 \
+                --quantile 0.25 \
                 --quantile 0.50 \
+                --quantile 0.75 \
                 --quantile 0.95 \
                 --quantile-type "sym" \
                 --output-dir "." \
                 --tag $TAG \
+                --figtype png --figtype pdf \
                 --legend \
                 --Verbose \
             || exit 1
