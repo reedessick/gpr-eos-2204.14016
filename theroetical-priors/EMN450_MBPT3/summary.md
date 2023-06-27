@@ -144,14 +144,18 @@ These models trust the each EFT calculation up to `~1.5*nsat` (`p/c2 = 1e13 g/cm
 
 ### Credible regions
 
-Below, I show 50% and 90% symmetric credible regions for R(M) and Lambda(M) as a function of M derived from each process that conditions on the BPS crust up to `0.25*nsat`" and has plenty of wiggles (`s=1.00` & `l=0.50`).
+Below, I show 90% symmetric credible regions for R(M) and Lambda(M) as a function of M derived from each process that conditions on the BPS crust up to `0.25*nsat`" and has plenty of wiggles (`s=1.00` & `l=0.50`).
 
 Note the "notches" apparent around `M=0.6` are due to a headache with how the plots are generated.
 There is another stable branch at very low central pressures (almost entirely crust) that happens to have support in the TOV sequence between `0.58-0.62 Msun`, and the quantiles are computed by selecting randomly between branches with overlap at the same masses.
 "Publication quality" plots would exclude this low-density branch and correspond to "smooth quantiles" throughout the entire mass range (appart from changes associated with the collapse to a BH).
 
-Shaded regions correspond to the 50% and 90% symmetric credible regions.
+Shaded regions correspond to 90% symmetric credible regions.
 The solid line is the median.
+
+In addition to the N2LO and N3LO calculations, I also include two "artificially precise" processes that closely follow the mean of the actual N2LO and N3LO bands (N2LO-fixed and N3LO-fixed, respectively).
+These provide a model of the impact of more precise theoretical calculations within the current EFT band.
+In reality, more precise theory may also extend to higher pressures as well.
 
 |mass-radius|mass-Lambda|
 |---|---|
