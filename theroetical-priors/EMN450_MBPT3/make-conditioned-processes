@@ -18,7 +18,7 @@ MAX_GRID_PC2="1e17"
 
 NUM_EOS_FOR_DISTRIBUTIONS=1000 ### for distributions at reference pressures
 
-#NUM_EOS_SAMPLES=1000           ### for actual realizations (via draw-gpr)
+#NUM_EOS_SAMPLES=50              ### for actual realizations (via draw-gpr)
 NUM_EOS_SAMPLES=10000           ### for actual realizations (via draw-gpr)
 
 SAMPLE_ALPHA=0.05
