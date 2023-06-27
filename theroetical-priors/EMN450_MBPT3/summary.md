@@ -165,7 +165,7 @@ In reality, more precise theory may also extend to higher pressures as well.
 | |rest-mass density|energy density|
 |---|---|---|
 |pressure|<img src="plot-quantiles_baryon_density-pressurec2-2023-06-09-EMN450_NXLO_MBPT3_beta_equilibrium_eft_bands_01d00_000d500_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010.png">|<img src="./plot-quantiles_energy_densityc2-pressurec2-2023-06-09-EMN450_NXLO_MBPT3_beta_equilibrium_eft_bands_01d00_000d500_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010.png">||
-|sound-speed|<img src="plot-quantiles_baryon_density-cs2c2-2023-06-09-EMN450_NXLO_MBPT3_beta_equilibrium_eft_bands_01d00_000d500_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010.png">|<img src="./plot-quantiles_energy_densityc2-cs2c2-2023-06-09-EMN450_NXLO_MBPT3_beta_equilibrium_eft_bands_01d00_000d500_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010.pdf">||
+|sound-speed|<img src="plot-quantiles_baryon_density-cs2c2-2023-06-09-EMN450_NXLO_MBPT3_beta_equilibrium_eft_bands_01d00_000d500_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010.png">|<img src="./plot-quantiles_energy_densityc2-cs2c2-2023-06-09-EMN450_NXLO_MBPT3_beta_equilibrium_eft_bands_01d00_000d500_trunc+cond_maxpc2-1e13_hadagn_05d000_00d010.png">||
 
 ### Observations
 
